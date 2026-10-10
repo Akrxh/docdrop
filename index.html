@@ -8,28 +8,21 @@
 
 <!-- FIREBASE (Firestore) -->
 <script type="module" onerror="window.DD=null;window.dispatchEvent(new CustomEvent('dd-firebase-error'))">
-  // Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+  import { getFirestore, collection, doc, setDoc, getDoc, getDocs, updateDoc, deleteDoc, onSnapshot, query, where, runTransaction, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyDbiioSBm_Ri7nxaLAx1-ej9OKBCpZ7Tfk",
-  authDomain: "docdrop-official.firebaseapp.com",
-  projectId: "docdrop-official",
-  storageBucket: "docdrop-official.firebasestorage.app",
-  messagingSenderId: "231440607567",
-  appId: "1:231440607567:web:80be558688f4f9ce79fd3a",
-  measurementId: "G-XE94GHEFS8"
-};
+  const firebaseConfig = {
+    apiKey: "AIzaSyDbiioSBm_Ri7nxaLAx1-ej9OKBCpZ7Tfk",
+    authDomain: "docdrop-official.firebaseapp.com",
+    projectId: "docdrop-official",
+    storageBucket: "docdrop-official.firebasestorage.app",
+    messagingSenderId: "231440607567",
+    appId: "1:231440607567:web:80be558688f4f9ce79fd3a"
+  };
 
   try {
-    // Initialize Firebase
     const app = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(app);
+    const db = getFirestore(app);
     window.DD = { db, collection, doc, setDoc, getDoc, getDocs, updateDoc, deleteDoc, onSnapshot, query, where, runTransaction, arrayUnion, arrayRemove };
     window.dispatchEvent(new CustomEvent("dd-firebase-ready"));
   } catch (e) {
@@ -152,6 +145,7 @@ button{cursor:pointer}
 #dialogModal{z-index:300}
 #dialogModal .title{font-size:24px}
 #dialogModal .field{margin:12px 0 0}
+#dlgMsg{white-space:pre-line}
 
 .net-tag{display:inline-flex;align-items:center;gap:9px;padding:8px 16px;border:3px solid #0b0b0b;border-radius:999px;background:#fff;color:#0b0b0b;font:900 14px Arial,Helvetica,sans-serif;box-shadow:4px 4px 0 #0b0b0b}
 .net-tag i{width:13px;height:13px;border-radius:50%;background:#22a84a;display:block}
@@ -336,7 +330,7 @@ button{cursor:pointer}
         </div>
 
         <div class="section-card">
-          <div class="section-head"><div><div class="label">SENT ACTIVE OPTS</div><h2>MY GENERATED CODES</h2></div></div>
+          <div class="section-head"><div><div class="label">SENT ACTIVE OTPS</div><h2>MY GENERATED CODES</h2></div></div>
           <div class="list" id="outList"></div>
         </div>
 
@@ -812,6 +806,8 @@ async function adminRemove(id){
     const u=ud.data();
     const fs=await c.getDocs(c.query(c.collection(c.db,"dd_files"),c.where("owner","==",id)));
     for(const d of fs.docs){await destroyFile(d.data());}
+    const sh=await c.getDocs(c.query(c.collection(c.db,"dd_shares"),c.where("owner","==",id)));
+    for(const d of sh.docs){await c.deleteDoc(d.ref);}
     const gs=await c.getDocs(c.query(c.collection(c.db,"dd_groups"),c.where("members","array-contains",id)));
     for(const d of gs.docs){
       await c.updateDoc(d.ref,{members:c.arrayRemove(id),admins:c.arrayRemove(id)});
@@ -1229,16 +1225,16 @@ function genOtpCode(){
 async function generateShareOtp(fileId){
   const c=F();
   if(!c){toast("Cloud unavailable.");return null;}
-  const code=genOtpCode();
-  const shareRef=c.doc(c.db,"dd_shares",code);
   try{
-    await c.setDoc(shareRef,{
-      code,
-      fileId,
-      owner:S.user.id,
-      created:Date.now()
-    });
-    return code;
+    for(let i=0;i<10;i++){
+      const code=genOtpCode();
+      const ref=c.doc(c.db,"dd_shares",code);
+      if((await c.getDoc(ref)).exists()){continue;}
+      await c.setDoc(ref,{code,fileId,owner:S.user.id,created:Date.now()});
+      return code;
+    }
+    toast("Could not create a code. Try again.");
+    return null;
   }catch(e){
     cloudErr(e);
     return null;
@@ -1250,15 +1246,15 @@ async function generateShareOtpFromPage(){
   if(!fid){toast("Select a document first.");return;}
   const code=await generateShareOtp(fid);
   if(code){
-    await askConfirm("SHARE CODE GENERATED", "Your 6-digit Share OTP is: " + code + "\n\nGive this code to anyone so they can redeem and import this document.", "OK");
+    await askConfirm("SHARE CODE GENERATED","Your 6-digit Share OTP is: "+code+"\n\nGive this code to anyone so they can redeem and import this document.","OK");
   }
 }
 
 let shareTargetId=null;
 function openShareModal(id){
-  shareTargetId=id;
   const f=S.files.find(x=>x.id===id);
   if(!f){return;}
+  shareTargetId=id;
   $("shareName").textContent=f.name;
   $("shareOtpResult").classList.add("hidden");
   $("genOtpBtn").classList.remove("hidden");
@@ -1270,7 +1266,7 @@ async function generateShareOtpFromModal(){
   const code=await generateShareOtp(shareTargetId);
   if(code){
     const resEl=$("shareOtpResult");
-    resEl.textContent="OTP CODE: " + code;
+    resEl.textContent="OTP CODE: "+code;
     resEl.classList.remove("hidden");
     $("genOtpBtn").classList.add("hidden");
     toast("Share code generated!");
@@ -1286,7 +1282,7 @@ async function redeemShareOtp(){
   try{
     const ref=c.doc(c.db,"dd_shares",code);
     const snap=await c.getDoc(ref);
-    if(!snap.exists()){toast("Invalid or expired share code.");return;}
+    if(!snap.exists()){toast("Invalid or revoked share code.");return;}
     const data=snap.data();
     if(data.owner===S.user.id){toast("You cannot redeem your own shared document.");return;}
 
@@ -1401,7 +1397,7 @@ async function declineRequest(gid,who){
   }catch(e){cloudErr(e);}
 }
 
-async function openGroupView(gid){
+function openGroupView(gid){
   S.openGroup=gid;
   renderGroups();
   window.scrollTo({top:0});
@@ -1492,7 +1488,7 @@ function vaultDocs(){
 }
 
 function fileRow(f,ctx,gid){
-  const meta=fmtSize(f.size)+" • "+(ctx==="vault"?"from "+esc(f.deviceLabel||"device"):"time "+timeAgo(f.created));
+  const meta=fmtSize(f.size)+" • "+(ctx==="vault"?"from "+esc(f.deviceLabel||"device"):timeAgo(f.created));
   const fresh=ctx==="vault"&&f.device!==S.deviceId&&Date.now()-f.created<300000;
 
   let acts=previewable(f)?`<button class="btn small" onclick="openFile('${f.id}')">OPEN</button>`:"";
@@ -1554,7 +1550,7 @@ function renderShare(){
           <div><b>OTP: ${esc(s.code)}</b><small>Document: ${esc(f?f.name:"Unknown file")}</small></div>
         </div>
         <div class="row">
-          <button class="btn small" onclick="revokeShareOtp('${s.code}')">REVOKE</button>
+          <button class="btn small" onclick="revokeShareOtp('${esc(s.code)}')">REVOKE</button>
         </div>
       </div>
     `;
@@ -1564,6 +1560,10 @@ function renderShare(){
 function renderGroups(){
   const home=$("groupsHome");
   const det=$("groupDetail");
+
+  const reqTotal=Object.keys(S.requests).reduce((a,k)=>a+S.requests[k].length,0);
+  $("groupBadge").textContent=reqTotal?"("+reqTotal+")":"";
+
   const g=S.openGroup?S.groups.find(x=>x.id===S.openGroup):null;
 
   if(!g){
@@ -1577,12 +1577,26 @@ function renderGroups(){
           <button class="btn" onclick="joinGroup()">JOIN WITH ROOM CODE</button>
         </div>
       </div>
+
+      ${S.myRequests.length?`
+        <div class="section-card">
+          <div class="section-head"><h2>PENDING REQUESTS</h2></div>
+          <div class="list">
+            ${S.myRequests.map(r=>`
+              <div class="item">
+                <div class="left"><div><b>${esc(r.gname)}</b><small>Waiting for approval • ${timeAgo(r.time)}</small></div></div>
+                <button class="btn small" onclick="cancelRequest('${esc(r.id)}')">CANCEL</button>
+              </div>
+            `).join("")}
+          </div>
+        </div>`:""}
+
       <div class="section-card">
         <div class="section-head"><h2>MY GROUPS</h2></div>
         <div class="list">
           ${S.groups.map(x=>`
             <div class="item">
-              <div class="left"><div><b>${esc(x.name)}</b><small>${(x.members||[]).length} members</small></div></div>
+              <div class="left"><div><b>${esc(x.name)}</b><small>${(x.members||[]).length} members${isAdmin(x)&&(S.requests[x.id]||[]).length?" • "+S.requests[x.id].length+" REQUEST(S)":""}</small></div></div>
               <button class="btn small" onclick="openGroupView('${x.id}')">OPEN</button>
             </div>
           `).join("")||`<div class="notice">No groups yet.</div>`}
@@ -1595,6 +1609,7 @@ function renderGroups(){
   home.classList.add("hidden");
   det.classList.remove("hidden");
   const files=(S.groupFiles[g.id]||[]).slice().sort((a,b)=>b.created-a.created);
+  const reqs=isAdmin(g)?(S.requests[g.id]||[]):[];
 
   det.innerHTML=`
     <div class="row" style="margin-bottom:12px">
@@ -1607,6 +1622,23 @@ function renderGroups(){
         <button class="btn small" onclick="leaveGroup('${g.id}')">LEAVE GROUP</button>
       </div>
     </div>
+
+    ${reqs.length?`
+      <div class="section-card">
+        <div class="section-head"><h2>JOIN REQUESTS (${reqs.length})</h2></div>
+        <div class="list">
+          ${reqs.map(r=>`
+            <div class="item">
+              <div class="left"><div><b>${esc(r.name)}</b><small>@${esc(r.username)} • ${timeAgo(r.time)}</small></div></div>
+              <div class="row">
+                <button class="btn small" onclick="approveRequest('${g.id}','${esc(r.uid)}')">APPROVE</button>
+                <button class="btn small" onclick="declineRequest('${g.id}','${esc(r.uid)}')">DECLINE</button>
+              </div>
+            </div>
+          `).join("")}
+        </div>
+      </div>`:""}
+
     <div class="section-card">
       <div class="section-head"><h2>GROUP DOCUMENTS</h2></div>
       <div class="dz" id="groupDz" data-dz="group">
@@ -1683,6 +1715,18 @@ document.addEventListener("drop",e=>{
   if(z.dataset.dz==="group"&&S.openGroup){handleFiles(files,{group:S.openGroup});}
   else if(z.dataset.dz==="vault"){handleFiles(files,{});}
 });
+
+/* ---------- online tag ---------- */
+
+function updateNetTag(){
+  const on=navigator.onLine;
+  const el=$("netTagSide");
+  el.classList.toggle("offline",!on);
+  el.lastElementChild.textContent=on?"Online":"Offline";
+}
+window.addEventListener("online",updateNetTag);
+window.addEventListener("offline",updateNetTag);
+updateNetTag();
 
 /* ---------- start ---------- */
 
