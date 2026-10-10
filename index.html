@@ -146,6 +146,14 @@ button{cursor:pointer}
 #dialogModal .title{font-size:24px}
 #dialogModal .field{margin:12px 0 0}
 #dlgMsg{white-space:pre-line}
+@media(max-width:700px){
+  .item{flex-direction:column;align-items:stretch;gap:10px}
+  .item .left{flex:1 1 100%;width:100%}
+  .item .left b{display:block;word-break:break-word}
+  .item>.row{width:100%;display:grid;grid-template-columns:repeat(auto-fit,minmax(105px,1fr));gap:8px;justify-content:stretch}
+  .item>.row .btn{width:100%;padding:10px 6px}
+  .section-card{padding:14px}
+}
 
 .net-tag{display:inline-flex;align-items:center;gap:9px;padding:8px 16px;border:3px solid #0b0b0b;border-radius:999px;background:#fff;color:#0b0b0b;font:900 14px Arial,Helvetica,sans-serif;box-shadow:4px 4px 0 #0b0b0b}
 .net-tag i{width:13px;height:13px;border-radius:50%;background:#22a84a;display:block}
@@ -233,7 +241,13 @@ button{cursor:pointer}
     <button class="btn black full" onclick="adminAdd()">ADD USER</button>
     <div class="label" style="margin:18px 0 8px">ALL ACCOUNTS</div>
     <div class="list" id="admList"></div>
-    <button class="btn full" style="margin-top:16px" onclick="location.reload()">EXIT ADMIN</button>
+    <div class="label" style="margin:20px 0 8px">CHANGE ADMIN CODE</div>
+    <div class="field" style="margin-top:0">
+      <input id="admNew" type="password" maxlength="6" inputmode="numeric" placeholder="New 6-digit admin code" autocomplete="off">
+      <input id="admNew2" type="password" maxlength="6" inputmode="numeric" placeholder="Repeat new admin code" autocomplete="off" style="margin-top:8px">
+    </div>
+    <button class="btn full" onclick="adminChangeCode()">SAVE ADMIN CODE</button>
+    <button class="btn black full" style="margin-top:16px" onclick="location.reload()">EXIT ADMIN</button>
   </div>
 
 </div>
@@ -368,6 +382,19 @@ button{cursor:pointer}
         </div>
 
         <div class="section-card">
+          <div class="section-head"><div><div class="label">VERIFY WITH YOUR ACCESS CODE</div><h2>REMOVE DEVICE WITH CODE</h2></div></div>
+          <div class="field">
+            <label>Device</label>
+            <select id="rmDevice"></select>
+          </div>
+          <div class="field">
+            <label>Your 6-digit access code</label>
+            <input id="rmCode" type="password" maxlength="6" inputmode="numeric" placeholder="000000" autocomplete="off">
+          </div>
+          <button class="btn black full" onclick="removeDeviceWithCode()">REMOVE DEVICE</button>
+        </div>
+
+        <div class="section-card">
           <div class="section-head"><h2>SECURITY</h2></div>
           <div class="notice">
             Your access code is stored only as a SHA-256 hash. Document sharing is secured via automatically generated OTP share codes.
@@ -431,11 +458,8 @@ const CHUNK=700000;
 const MAX_MEMBERS=50;
 const MAX_GROUPS=10;
 
-/* >>> CHANGE THIS: entering this code on the login screen opens the admin panel <<< */
-const ADMIN_CODE="246810";
-
 const S={
-  user:null,deviceId:"",deviceName:"",
+  adminHash:null,user:null,deviceId:"",deviceName:"",
   files:[],sharedIn:[],myShares:[],groups:[],groupFiles:{},requests:{},myRequests:[],
   users:{},unsubs:[],gsubs:{},page:"vault",openGroup:null,filesLoaded:false,query:"",active:false
 };
@@ -485,8 +509,15 @@ function isPdf(f){
   return f.type==="application/pdf"||/\.pdf$/i.test(f.name||"");
 }
 
+const MIME={pdf:"application/pdf",png:"image/png",jpg:"image/jpeg",jpeg:"image/jpeg",gif:"image/gif",webp:"image/webp",bmp:"image/bmp",txt:"text/plain",csv:"text/csv",html:"text/html",doc:"application/msword",docx:"application/vnd.openxmlformats-officedocument.wordprocessingml.document",xls:"application/vnd.ms-excel",xlsx:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",ppt:"application/vnd.ms-powerpoint",pptx:"application/vnd.openxmlformats-officedocument.presentationml.presentation",zip:"application/zip"};
+
+function mimeOf(f){
+  if(f.type&&f.type!=="application/octet-stream"){return f.type;}
+  return MIME[extOf(f.name).toLowerCase()]||"application/octet-stream";
+}
+
 function previewable(f){
-  return isPdf(f)||/^image\//.test(f.type||"")||/^text\//.test(f.type||"");
+  return /^(application\/pdf|image\/|text\/)/.test(mimeOf(f));
 }
 
 /* ---------- toast / dialogs / modals ---------- */
@@ -718,15 +749,32 @@ function failCode(){
 }
 
 async function doLogin(){
-  if(codeInput===ADMIN_CODE){
+  const c=F();
+  const h=await hashCode(codeInput);
+  const adm=await c.getDoc(c.doc(c.db,"dd_admin","main"));
+  S.adminHash=adm.exists()?adm.data().codeHash:null;
+  if(S.adminHash&&h===S.adminHash){
     fails=0;
     await openAdmin();
     return;
   }
-  const c=F();
-  const h=await hashCode(codeInput);
   const claim=await c.getDoc(c.doc(c.db,"dd_claims","c_"+h));
-  if(!claim.exists()){failCode();return;}
+  if(!claim.exists()){
+    if(!S.adminHash){
+      const ok=await askConfirm("SET ADMIN CODE","No admin code has been set yet. Use this code as the admin code? Do this right after you deploy the app.","SET ADMIN CODE");
+      if(ok){
+        await c.setDoc(c.doc(c.db,"dd_admin","main"),{codeHash:h,updated:Date.now()});
+        S.adminHash=h;
+        fails=0;
+        await openAdmin();
+        return;
+      }
+      resetCode();
+      return;
+    }
+    failCode();
+    return;
+  }
   const uidv=claim.data().owner;
   const snap=await c.getDoc(c.doc(c.db,"dd_users",uidv));
   if(!snap.exists()||snap.data().codeHash!==h){failCode();return;}
@@ -768,10 +816,10 @@ async function adminAdd(){
   if(!name||!username){toast("Enter name and username.");return;}
   if(!/^[a-z0-9_.]{3,20}$/.test(username)){toast("Username: 3-20 letters, numbers, _ or .");return;}
   if(!/^\d{6}$/.test(code)){toast("Code must contain 6 digits.");return;}
-  if(code===ADMIN_CODE){toast("That code is reserved. Use another.");return;}
 
   const c=F();
   const h=await hashCode(code);
+  if(h===S.adminHash){toast("That code is reserved. Use another.");return;}
   const id=uid();
   const uRef=c.doc(c.db,"dd_claims","u_"+username);
   const kRef=c.doc(c.db,"dd_claims","c_"+h);
@@ -817,6 +865,21 @@ async function adminRemove(id){
     await c.deleteDoc(ud.ref);
     toast("User removed.");
     loadAdminUsers();
+  }catch(e){cloudErr(e);}
+}
+
+async function adminChangeCode(){
+  const a=$("admNew").value.trim(),b=$("admNew2").value.trim();
+  if(!/^\d{6}$/.test(a)){toast("Admin code must contain 6 digits.");return;}
+  if(a!==b){toast("The two codes do not match.");return;}
+  const c=F();
+  try{
+    const h=await hashCode(a);
+    if((await c.getDoc(c.doc(c.db,"dd_claims","c_"+h))).exists()){toast("A user already uses that code. Choose another.");return;}
+    await c.setDoc(c.doc(c.db,"dd_admin","main"),{codeHash:h,updated:Date.now()});
+    S.adminHash=h;
+    $("admNew").value="";$("admNew2").value="";
+    toast("Admin code changed.");
   }catch(e){cloudErr(e);}
 }
 
@@ -1089,7 +1152,7 @@ async function downloadFile(id){
   try{
     showProgress("Downloading "+f.name,30);
     const bytes=await fetchBytes(f);
-    saveBlob(new Blob([bytes],{type:f.type||"application/octet-stream"}),f.name);
+    saveBlob(new Blob([bytes],{type:mimeOf(f)}),f.name);
   }catch(e){
     cloudErr(e);
   }
@@ -1103,8 +1166,8 @@ async function openFile(id){
   try{
     showProgress("Opening "+f.name,30);
     const bytes=await fetchBytes(f);
-    const url=URL.createObjectURL(new Blob([bytes],{type:f.type||"application/octet-stream"}));
-    if(w){w.location=url;}else{saveBlob(new Blob([bytes],{type:f.type}),f.name);}
+    const url=URL.createObjectURL(new Blob([bytes],{type:mimeOf(f)}));
+    if(w){w.location=url;}else{saveBlob(new Blob([bytes],{type:mimeOf(f)}),f.name);}
   }catch(e){
     if(w){w.close();}
     cloudErr(e);
@@ -1680,12 +1743,47 @@ function renderAccount(){
   }).join("");
 }
 
+function renderRmDevices(){
+  const sel=$("rmDevice"),cur=sel.value;
+  const devs=S.user.devices||{};
+  const ids=Object.keys(devs).filter(id=>id!==S.deviceId);
+  sel.innerHTML=ids.length
+    ?ids.map(id=>`<option value="${esc(id)}">${esc(devs[id].name)} (${esc(devs[id].type||"?")})</option>`).join("")+`<option value="__all__">All other devices</option>`
+    :`<option value="">No other devices</option>`;
+  if(cur&&Array.from(sel.options).some(o=>o.value===cur)){sel.value=cur;}
+}
+
+async function removeDeviceWithCode(){
+  const id=$("rmDevice").value,code=$("rmCode").value.trim();
+  if(!id){toast("There is no other device to remove.");return;}
+  if(!/^\d{6}$/.test(code)){toast("Enter your 6-digit access code.");return;}
+  if(Date.now()<lockUntil){toast("Too many attempts. Try again in "+Math.ceil((lockUntil-Date.now())/1000)+"s.");return;}
+  if((await hashCode(code))!==S.user.codeHash){
+    $("rmCode").value="";
+    fails++;
+    if(fails>=5){fails=0;lockUntil=Date.now()+60000;toast("Too many wrong codes. Locked for 60 seconds.");}
+    else{toast("Incorrect access code.");}
+    return;
+  }
+  fails=0;
+  const c=F();
+  try{
+    const next=Object.assign({},S.user.devices);
+    if(id==="__all__"){Object.keys(next).forEach(k=>{if(k!==S.deviceId){delete next[k];}});}
+    else{delete next[id];}
+    await c.updateDoc(c.doc(c.db,"dd_users",S.user.id),{devices:next});
+    $("rmCode").value="";
+    toast(id==="__all__"?"Other devices removed.":"Device removed.");
+  }catch(e){cloudErr(e);}
+}
+
 function renderAll(){
   if(!S.active||!S.user){return;}
   renderVault();
   renderShare();
   renderGroups();
   renderAccount();
+  renderRmDevices();
 }
 
 /* ---------- navigation ---------- */
