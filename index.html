@@ -6,237 +6,158 @@
 <meta name="theme-color" content="#ffffff">
 <title>DOCDROP — Document Transfer</title>
 
-<!-- FIREBASE (Firestore) -->
-<script type="module" onerror="window.DD=null;window.dispatchEvent(new CustomEvent('dd-firebase-error'))">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
-  import { getFirestore, collection, doc, setDoc, getDoc, getDocs, updateDoc, deleteDoc, onSnapshot, query, where, runTransaction, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyDbiioSBm_Ri7nxaLAx1-ej9OKBCpZ7Tfk",
-    authDomain: "docdrop-official.firebaseapp.com",
-    projectId: "docdrop-official",
-    storageBucket: "docdrop-official.firebasestorage.app",
-    messagingSenderId: "231440607567",
-    appId: "1:231440607567:web:80be558688f4f9ce79fd3a"
-  };
-
-  try {
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    window.DD = { db, collection, doc, setDoc, getDoc, getDocs, updateDoc, deleteDoc, onSnapshot, query, where, runTransaction, arrayUnion, arrayRemove };
-    window.dispatchEvent(new CustomEvent("dd-firebase-ready"));
-  } catch (e) {
-    console.error("DocDrop Firebase init failed", e);
-    window.DD = null;
-    window.dispatchEvent(new CustomEvent("dd-firebase-error"));
-  }
+<script>window.DDready=new Promise(function(r){window._ddRes=r;});</script>
+<script type="module">
+  /* Pinned to a version that exists on the CDN. */
+  const V="11.10.0",B="https://www.gstatic.com/firebasejs/"+V+"/";
+  try{
+    const a=await import(B+"firebase-app.js");
+    const f=await import(B+"firebase-firestore.js");
+    const app=a.initializeApp({
+      apiKey:"AIzaSyDbiioSBm_Ri7nxaLAx1-ej9OKBCpZ7Tfk",
+      authDomain:"docdrop-official.firebaseapp.com",
+      projectId:"docdrop-official",
+      storageBucket:"docdrop-official.firebasestorage.app",
+      messagingSenderId:"231440607567",
+      appId:"1:231440607567:web:ebafc0c78db6f76679fd3a"
+    });
+    window.DD={db:f.getFirestore(app),collection:f.collection,doc:f.doc,setDoc:f.setDoc,getDoc:f.getDoc,getDocs:f.getDocs,updateDoc:f.updateDoc,deleteDoc:f.deleteDoc,onSnapshot:f.onSnapshot,query:f.query,where:f.where,runTransaction:f.runTransaction,arrayUnion:f.arrayUnion,arrayRemove:f.arrayRemove};
+    window._ddRes(true);
+  }catch(e){console.error("DocDrop Firebase load failed",e);window.DD=null;window._ddRes(false);}
 </script>
 
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-.keypad,.key,.code-dots,.dot,.device,.btn,.close,.topbar{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
-.key:focus,.btn:focus,.device:focus{outline:none}
-input::selection{background:#d9d9d9;color:#0b0b0b}
-html,body{margin:0;padding:0;min-height:100%;font-family:Arial,Helvetica,sans-serif;background:#fff;color:#0b0b0b}
+.key,.device,.btn,.close,.topbar,.dot{-webkit-user-select:none;user-select:none}
+html,body{margin:0;min-height:100%;font-family:Arial,Helvetica,sans-serif;background:#fff;color:#0b0b0b}
 body{overflow-x:hidden}
-button,input,textarea,select{font:inherit}
-button{cursor:pointer}
+button,input,select{font:inherit}button{cursor:pointer}
 .hidden{display:none!important}
-:root{--black:#0b0b0b;--shadow:5px 6px 0 #0b0b0b}
-.screen{min-height:100vh}
-.card{background:#fff;border:2px solid var(--black);border-radius:18px;box-shadow:var(--shadow)}
-.btn{border:2px solid var(--black);background:#fff;color:#0b0b0b;padding:11px 15px;border-radius:10px;font-weight:900;text-transform:uppercase;letter-spacing:.4px;box-shadow:3px 4px 0 #0b0b0b}
-.btn:hover{background:#0b0b0b;color:#fff}
+:root{--k:#0b0b0b;--sh:5px 6px 0 #0b0b0b}
+.card,.section-card,.hero-main{background:#fff;border:2px solid var(--k);border-radius:18px;box-shadow:var(--sh)}
+.btn{border:2px solid var(--k);background:#fff;color:var(--k);padding:11px 15px;border-radius:10px;font-weight:900;text-transform:uppercase;letter-spacing:.4px;box-shadow:3px 4px 0 var(--k)}
+.btn:hover{background:var(--k);color:#fff}
 .btn:active{transform:translate(3px,4px);box-shadow:none}
-.btn.black{background:#0b0b0b;color:#fff}
-.btn.black:hover{background:#fff;color:#0b0b0b}
-.btn.small{font-size:10px;padding:8px 10px}
-.btn.full{width:100%}
-.btn:disabled{opacity:.5;cursor:default}
+.btn.black{background:var(--k);color:#fff}.btn.black:hover{background:#fff;color:var(--k)}
+.btn.small{font-size:10px;padding:8px 10px}.btn.full{width:100%}
+.btn:disabled{opacity:.5}
 .field{margin:14px 0}
-.field label{display:block;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:1px;margin-bottom:7px}
-.field input,.field textarea,.field select,.plain-input{width:100%;padding:12px 13px;border:2px solid #0b0b0b;border-radius:10px;background:#fff;color:#0b0b0b;outline:none}
-.field input:focus,.field select:focus,.plain-input:focus{outline:3px solid #ddd}
+.field label,.label{display:block;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:1px;margin-bottom:7px}
+.label{color:#777;font-size:10px;margin:0}
+.field input,.field select{width:100%;padding:12px 13px;border:2px solid var(--k);border-radius:10px;background:#fff;color:var(--k);outline:none}
 .row{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
-.between{justify-content:space-between}
-
-/* ONBOARDING */
-#onboard{position:relative;min-height:100vh;display:grid;place-items:center;padding:18px;overflow:hidden;background:#fff}
-#onboard:before,#onboard:after{content:"";position:absolute;width:260px;height:180px;background:repeating-linear-gradient(135deg,#0b0b0b 0 7px,#fff 7px 25px);pointer-events:none}
-#onboard:before{top:-45px;right:-55px}
-#onboard:after{bottom:-45px;left:-55px}
-.onboard-card{width:min(520px,100%);padding:27px;position:relative;z-index:1}
-.brand{font:900 64px Arial Black,Arial,sans-serif;letter-spacing:5px;line-height:1}
+#onboard{min-height:100vh;display:grid;place-items:center;padding:18px;background:#fff}
+.onboard-card{width:min(520px,100%);padding:27px}
+.brand{font:900 56px Arial Black,Arial,sans-serif;letter-spacing:5px;line-height:1}
 .brand small{display:block;font:900 11px Arial,sans-serif;letter-spacing:3px;margin-top:8px}
-.title{font:900 34px Arial Black,Arial,sans-serif;letter-spacing:1px;margin:6px 0 9px}
+.title{font:900 30px Arial Black,Arial,sans-serif;margin:6px 0 9px}
 .sub{color:#666;line-height:1.5}
 .device-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:20px 0}
-.device{min-height:110px;border:2px solid #0b0b0b;border-radius:14px;background:#fff;box-shadow:4px 4px 0 #0b0b0b;display:grid;place-items:center;padding:12px;text-align:center;color:#0b0b0b}
-.device.active{background:#0b0b0b;color:#fff;transform:translate(3px,3px);box-shadow:1px 1px 0 #0b0b0b}
-.device-mark{width:38px;height:38px;border:2px solid currentColor;border-radius:50%;display:grid;place-items:center;font-weight:900;margin:auto}
-.device b{display:block;margin-top:8px}
+.device{min-height:100px;border:2px solid var(--k);border-radius:14px;background:#fff;box-shadow:4px 4px 0 var(--k);padding:12px;text-align:center;color:var(--k)}
+.device.active{background:var(--k);color:#fff;transform:translate(3px,3px);box-shadow:1px 1px 0 var(--k)}
 .device small{display:block;margin-top:3px;opacity:.7}
 .code-dots{display:flex;justify-content:center;gap:11px;margin:17px 0}
-.dot{width:14px;height:14px;border:2px solid #0b0b0b;border-radius:50%;background:#fff}
-.dot.fill{background:#0b0b0b}
+.dot{width:14px;height:14px;border:2px solid var(--k);border-radius:50%}.dot.fill{background:var(--k)}
 .keypad{width:min(310px,100%);margin:auto;display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
-.key{aspect-ratio:1;border:2px solid #0b0b0b;border-radius:50%;background:#fff;color:#0b0b0b;font-size:22px;font-weight:900;box-shadow:4px 5px 0 #0b0b0b}
-.key:active{transform:translate(4px,5px);box-shadow:none}
-.key.zero{grid-column:2}
+.key{aspect-ratio:1;border:2px solid var(--k);border-radius:50%;background:#fff;color:var(--k);font-size:22px;font-weight:900;box-shadow:4px 5px 0 var(--k)}
+.key:active{transform:translate(4px,5px);box-shadow:none}.key.zero{grid-column:2}
 .pc-mode .keypad{display:none}
 .link{border:0;background:none;text-decoration:underline;font-weight:800;color:#444;padding:8px 0}
-
-/* APP SHELL */
-#app{display:none;min-height:100vh;background:#fff;position:relative;overflow:hidden}
-#app:before,#app:after{content:"";position:fixed;width:250px;height:160px;background:repeating-linear-gradient(135deg,#0b0b0b 0 7px,#fff 7px 25px);z-index:0;pointer-events:none}
-#app:before{top:0;right:0;clip-path:polygon(100% 0,100% 100%,0 0)}
-#app:after{bottom:0;left:0;clip-path:polygon(0 100%,100% 100%,0 0)}
-.shell{position:relative;z-index:1;min-height:100vh;display:grid;grid-template-columns:245px 1fr}
-.sidebar{position:sticky;top:0;height:100vh;background:#fff;border-right:2px solid #0b0b0b;padding:20px 13px;display:flex;flex-direction:column}
-.side-brand{font:900 34px Arial Black,Arial,sans-serif;letter-spacing:3px;margin:6px 10px 26px}
+#app{display:none;min-height:100vh}
+.shell{display:grid;grid-template-columns:230px 1fr;min-height:100vh}
+.sidebar{position:sticky;top:0;height:100vh;border-right:2px solid var(--k);padding:20px 13px;display:flex;flex-direction:column}
+.side-brand{font:900 30px Arial Black,Arial,sans-serif;letter-spacing:3px;margin:6px 10px 26px}
 .nav{display:grid;gap:7px}
-.nav button{border:2px solid transparent;background:transparent;color:#0b0b0b;border-radius:10px;text-align:left;padding:12px;font-weight:900}
-.nav button.active,.nav button:hover{background:#0b0b0b;color:#fff;border-color:#0b0b0b}
-.side-bottom{margin-top:auto;padding:10px;border-top:1px solid #0b0b0b;color:#777;font-size:11px}
-.main{min-width:0;width:100%;max-width:1200px;margin:auto;padding:22px;overflow:hidden}
-.topbar{display:flex;align-items:center;gap:10px;justify-content:space-between;border-bottom:2px solid #0b0b0b;padding-bottom:13px;margin-bottom:15px}
-.logo-tap{font:900 27px Arial Black,Arial,sans-serif;letter-spacing:3px}
-.page{display:none}
-.page.active{display:block}
-
-.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:0 0 15px}
-.stat{padding:14px;min-width:0}
-.stat .n{font:900 26px Arial Black,Arial,sans-serif;overflow-wrap:anywhere}
-.label{color:#777;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.5px}
-.section-card{padding:18px;min-width:0;background:#fff;border:2px solid #0b0b0b;border-radius:18px;box-shadow:var(--shadow);margin-bottom:15px}
-.section-head{display:flex;gap:10px;justify-content:space-between;align-items:center;margin-bottom:13px;min-width:0;flex-wrap:wrap}
-.section-head h2{margin:0;font:900 25px Arial Black,Arial,sans-serif;overflow-wrap:anywhere}
+.nav button{border:2px solid transparent;background:none;color:var(--k);border-radius:10px;text-align:left;padding:12px;font-weight:900}
+.nav button.active,.nav button:hover{background:var(--k);color:#fff}
+.side-bottom{margin-top:auto;padding:10px;border-top:1px solid var(--k);color:#777;font-size:11px}
+.main{min-width:0;width:100%;max-width:1100px;margin:auto;padding:22px}
+.topbar{display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid var(--k);padding-bottom:13px;margin-bottom:15px}
+.logo-tap{font:900 25px Arial Black,Arial,sans-serif;letter-spacing:3px}
+.page{display:none}.page.active{display:block}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:15px}
+.stat{padding:14px}.stat .n{font:900 24px Arial Black,Arial,sans-serif;overflow-wrap:anywhere}
+.section-card,.hero-main{padding:18px;margin-bottom:15px;min-width:0}
+.section-head{display:flex;gap:10px;justify-content:space-between;align-items:center;margin-bottom:13px;flex-wrap:wrap}
+h2{margin:0;font:900 22px Arial Black,Arial,sans-serif;overflow-wrap:anywhere}
+.hero-main h1{font:900 30px Arial Black,Arial,sans-serif;margin:8px 0;overflow-wrap:anywhere}
 .list{display:grid;gap:9px}
-.item{border:2px solid #0b0b0b;border-radius:12px;background:#fff;padding:12px;display:flex;align-items:center;justify-content:space-between;gap:9px;min-width:0;flex-wrap:wrap}
+.item{border:2px solid var(--k);border-radius:12px;padding:12px;display:flex;align-items:center;justify-content:space-between;gap:9px;flex-wrap:wrap}
 .item .left{display:flex;align-items:center;gap:10px;min-width:0;flex:1}
 .item .left>div{min-width:0}
 .item b,.item small{overflow-wrap:anywhere}
 .item small{display:block;color:#777;margin-top:3px}
-.item .row{justify-content:flex-end}
-.ext{min-width:46px;height:46px;border:2px solid #0b0b0b;border-radius:10px;display:grid;place-items:center;font-size:10px;font-weight:900;background:#fff;padding:0 3px;text-align:center}
-.ext.pdf{background:#0b0b0b;color:#fff}
-.badge{display:inline-block;padding:4px 7px;border:2px solid #0b0b0b;border-radius:8px;font-size:9px;font-weight:900;background:#fff;color:#0b0b0b}
-.badge.black{background:#0b0b0b;color:#fff}
-.notice{border:2px dashed #0b0b0b;border-radius:12px;padding:12px;background:#fff;font-size:12px;line-height:1.5}
+.ext{min-width:46px;height:46px;border:2px solid var(--k);border-radius:10px;display:grid;place-items:center;font-size:10px;font-weight:900;text-align:center}
+.ext.pdf{background:var(--k);color:#fff}
+.badge{display:inline-block;padding:4px 7px;border:2px solid var(--k);border-radius:8px;font-size:9px;font-weight:900}
+.badge.black{background:var(--k);color:#fff}
+.notice{border:2px dashed var(--k);border-radius:12px;padding:12px;font-size:12px;line-height:1.5}
 .searchbar{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
-.searchbar input{flex:1;min-width:150px;border:2px solid #0b0b0b;border-radius:9px;padding:10px;outline:none}
-.dz{border:2px dashed #0b0b0b;border-radius:14px;padding:20px;text-align:center;background:#fff;font-weight:900;font-size:12px;letter-spacing:.5px}
-.dz.over{background:#0b0b0b;color:#fff}
-.dz .row{justify-content:center;margin-top:10px}
-.mini-avatar{background:#fff;color:#0b0b0b;border:2px solid #0b0b0b;box-shadow:3px 3px 0 #0b0b0b;display:grid;place-items:center;font-weight:900;width:38px;height:38px;min-width:38px;border-radius:11px}
-.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
-.hero-main{border:2px solid #0b0b0b;border-radius:18px;box-shadow:var(--shadow);padding:20px;background:#fff;margin-bottom:15px}
-.hero-main h1{font:900 34px Arial Black,Arial,sans-serif;margin:8px 0;overflow-wrap:anywhere}
-.eyebrow{font-size:11px;font-weight:900;letter-spacing:2px}
-.xpbar{height:14px;border:2px solid #0b0b0b;border-radius:20px;overflow:hidden;background:#fff;margin:7px 0 0}
-.xpfill{height:100%;width:0;background:#0b0b0b}
-.progress{position:fixed;left:16px;bottom:16px;z-index:150;width:min(320px,calc(100vw - 32px));padding:12px 14px;border:2px solid #0b0b0b;border-radius:12px;background:#fff;box-shadow:5px 5px 0 #0b0b0b;font-size:11px;font-weight:900}
-
-/* MODALS */
+.searchbar input{flex:1;min-width:150px;border:2px solid var(--k);border-radius:9px;padding:10px}
+.dz{border:2px dashed var(--k);border-radius:14px;padding:20px;text-align:center;font-weight:900;font-size:12px}
+.dz.over{background:var(--k);color:#fff}.dz .row{justify-content:center;margin-top:10px}
+.mini-avatar{border:2px solid var(--k);box-shadow:3px 3px 0 var(--k);display:grid;place-items:center;font-weight:900;width:38px;height:38px;min-width:38px;border-radius:11px}
+.progress{position:fixed;left:16px;bottom:16px;z-index:150;width:min(320px,calc(100vw - 32px));padding:12px 14px;border:2px solid var(--k);border-radius:12px;background:#fff;box-shadow:5px 5px 0 var(--k);font-size:11px;font-weight:900}
+.xpbar{height:14px;border:2px solid var(--k);border-radius:20px;overflow:hidden;margin-top:7px}.xpfill{height:100%;width:0;background:var(--k)}
 .modal{position:fixed;inset:0;z-index:100;padding:12px;display:grid;place-items:center;background:rgba(255,255,255,.84);backdrop-filter:blur(5px)}
-.modal-box{width:min(560px,100%);max-height:92vh;overflow:auto;background:#fff;border:2px solid #0b0b0b;border-radius:18px;box-shadow:8px 9px 0 #0b0b0b;padding:20px}
-.close{float:right;width:36px;height:36px;border:2px solid #0b0b0b;border-radius:50%;background:#0b0b0b;color:#fff;font-size:18px}
-.toast{position:fixed;right:16px;bottom:16px;z-index:400;max-width:310px;padding:13px 16px;border:2px solid #fff;border-radius:12px;background:#0b0b0b;color:#fff;box-shadow:5px 5px 0 #fff;font-size:12px;font-weight:900}
-#dialogModal{z-index:300}
-#dialogModal .title{font-size:24px}
-#dialogModal .field{margin:12px 0 0}
-#dlgMsg{white-space:pre-line}
+.modal-box{width:min(560px,100%);max-height:92vh;overflow:auto;background:#fff;border:2px solid var(--k);border-radius:18px;box-shadow:8px 9px 0 var(--k);padding:20px}
+.close{float:right;width:36px;height:36px;border:2px solid var(--k);border-radius:50%;background:var(--k);color:#fff;font-size:18px}
+.toast{position:fixed;right:16px;bottom:16px;z-index:400;max-width:310px;padding:13px 16px;border:2px solid #fff;border-radius:12px;background:var(--k);color:#fff;box-shadow:5px 5px 0 #fff;font-size:12px;font-weight:900}
+#dialogModal{z-index:300}#dlgMsg{white-space:pre-line}
+.net-tag{display:inline-flex;align-items:center;gap:9px;padding:8px 16px;border:3px solid var(--k);border-radius:999px;font:900 14px Arial;box-shadow:4px 4px 0 var(--k);margin:0 10px 12px}
+.net-tag i{width:13px;height:13px;border-radius:50%;background:#22a84a}.net-tag.offline i{background:#e03131}
+.mobile-nav{display:none}
+@media(max-width:900px){
+  .shell{grid-template-columns:1fr}.sidebar{display:none}
+  .main{padding:13px 10px 92px}
+  .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .mobile-nav{position:fixed;left:5px;right:5px;bottom:5px;z-index:80;display:flex;gap:3px;padding:5px;background:#fff;border:2px solid var(--k);border-radius:17px;box-shadow:4px 4px 0 var(--k)}
+  .mobile-nav button{flex:1;min-width:0;border:0;background:none;color:var(--k);border-radius:9px;padding:9px 3px;font-size:10px;font-weight:900}
+  .mobile-nav button.active{background:var(--k);color:#fff}
+  .progress,.toast{bottom:84px}
+}
 @media(max-width:700px){
-  .item{flex-direction:column;align-items:stretch;gap:10px}
-  .item .left{flex:1 1 100%;width:100%}
-  .item .left b{display:block;word-break:break-word}
-  .item>.row{width:100%;display:grid;grid-template-columns:repeat(auto-fit,minmax(105px,1fr));gap:8px;justify-content:stretch}
+  .item{flex-direction:column;align-items:stretch}
+  .item>.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px}
   .item>.row .btn{width:100%;padding:10px 6px}
   .section-card{padding:14px}
 }
-
-.net-tag{display:inline-flex;align-items:center;gap:9px;padding:8px 16px;border:3px solid #0b0b0b;border-radius:999px;background:#fff;color:#0b0b0b;font:900 14px Arial,Helvetica,sans-serif;box-shadow:4px 4px 0 #0b0b0b}
-.net-tag i{width:13px;height:13px;border-radius:50%;background:#22a84a;display:block}
-.net-tag.offline i{background:#e03131}
-.sidebar .net-tag{margin:0 10px 12px}
-
-.mobile-nav{display:none}
-@media(max-width:900px){
-  .shell{grid-template-columns:1fr}
-  .sidebar{display:none}
-  .main{padding:13px 10px 92px}
-  .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .mobile-nav{position:fixed;left:5px;right:5px;bottom:5px;z-index:80;display:flex!important;gap:3px;padding:5px;background:#fff;border:2px solid #0b0b0b;border-radius:17px;box-shadow:4px 4px 0 #0b0b0b}
-  .mobile-nav button{flex:1;min-width:0;border:0;background:none;color:#0b0b0b;border-radius:9px;padding:9px 3px;font-size:10px;font-weight:900}
-  .mobile-nav button.active{background:#0b0b0b;color:#fff}
-  .progress{bottom:84px}
-  .toast{bottom:84px}
-}
-@media(max-width:560px){
-  .onboard-card{padding:20px}
-  .brand{font-size:46px}
-  .title{font-size:28px}
-  .keypad{max-width:280px;gap:8px}
-  .key{font-size:20px}
-  .stat .n{font-size:21px}
-  .hero-main h1{font-size:26px}
-}
+@media(max-width:560px){.onboard-card{padding:20px}.brand{font-size:42px}.keypad{max-width:280px;gap:8px}.key{font-size:20px}.stat .n{font-size:20px}}
 </style>
 </head>
-
 <body>
 
-<div id="onboard" class="screen">
-
+<div id="onboard">
   <div class="onboard-card card" id="deviceScreen">
     <div class="brand">DOCDROP<small>DOCUMENT TRANSFER</small></div>
     <h1 class="title">CHOOSE DEVICE</h1>
     <p class="sub">Pick the device you are using now. Documents sync between every device signed in to your account.</p>
     <div class="device-grid">
-      <button class="device" data-device="iOS"><div class="device-mark"></div><b>iOS</b><small>iPhone / iPad</small></button>
-      <button class="device" data-device="Android"><div class="device-mark">A</div><b>Android</b><small>Phone / Tablet</small></button>
-      <button class="device" data-device="PC"><div class="device-mark">PC</div><b>PC</b><small>Windows / Linux / Mac</small></button>
-      <button class="device" data-device="Tablet"><div class="device-mark">T</div><b>Tablet</b><small>Large touch screen</small></button>
+      <button class="device" data-device="iOS"><b>iOS</b><small>iPhone / iPad</small></button>
+      <button class="device" data-device="Android"><b>Android</b><small>Phone / Tablet</small></button>
+      <button class="device" data-device="PC"><b>PC</b><small>Windows / Linux / Mac</small></button>
+      <button class="device" data-device="Tablet"><b>Tablet</b><small>Large touch screen</small></button>
     </div>
     <button class="btn black full" id="deviceContinue">CONTINUE</button>
   </div>
 
   <div class="onboard-card card hidden" id="accountScreen">
     <div class="brand" style="font-size:40px">DOCDROP</div>
-    <h1 class="title" id="authTitle">ACCESS VAULT</h1>
-    <p class="sub" id="authSub">Enter your 6-digit access code.</p>
+    <h1 class="title">ACCESS VAULT</h1>
+    <p class="sub" id="authSub"></p>
     <div class="code-dots" id="codeDots"></div>
-    <div class="keypad">
-      <button class="key" data-key="1">1</button>
-      <button class="key" data-key="2">2</button>
-      <button class="key" data-key="3">3</button>
-      <button class="key" data-key="4">4</button>
-      <button class="key" data-key="5">5</button>
-      <button class="key" data-key="6">6</button>
-      <button class="key" data-key="7">7</button>
-      <button class="key" data-key="8">8</button>
-      <button class="key" data-key="9">9</button>
-      <button class="key" data-key="back">←</button>
-      <button class="key zero" data-key="0">0</button>
-      <button class="key" data-key="clear">C</button>
-    </div>
-    <div class="row" style="justify-content:center;margin-top:15px">
-      <button class="link" id="backToDevice">← Change device</button>
-    </div>
+    <div class="keypad" id="keypad"></div>
+    <div class="row" style="justify-content:center;margin-top:15px"><button class="link" id="backToDevice">← Change device</button></div>
   </div>
 
-  <!-- ADMIN PANEL -->
   <div class="onboard-card card hidden" id="adminScreen">
     <div class="brand" style="font-size:40px">ADMIN</div>
     <h1 class="title">USER ACCOUNTS</h1>
     <p class="sub">Add or remove accounts. Users sign in only with the code you give them.</p>
     <div class="field">
-      <label>Display name</label>
-      <input id="admName" maxlength="30" placeholder="Name" autocomplete="off">
-      <label style="margin-top:10px">Username</label>
-      <input id="admUser" maxlength="20" placeholder="@username" autocomplete="off">
-      <label style="margin-top:10px">6-digit access code</label>
-      <input id="admCode" maxlength="6" inputmode="numeric" placeholder="000000" autocomplete="off">
+      <label>Display name</label><input id="admName" maxlength="30" autocomplete="off">
+      <label style="margin-top:10px">Username</label><input id="admUser" maxlength="20" placeholder="@username" autocomplete="off">
+      <label style="margin-top:10px">6-digit access code</label><input id="admCode" maxlength="6" inputmode="numeric" placeholder="000000" autocomplete="off">
     </div>
     <button class="btn black full" onclick="adminAdd()">ADD USER</button>
     <div class="label" style="margin:18px 0 8px">ALL ACCOUNTS</div>
@@ -249,13 +170,10 @@ button{cursor:pointer}
     <button class="btn full" onclick="adminChangeCode()">SAVE ADMIN CODE</button>
     <button class="btn black full" style="margin-top:16px" onclick="location.reload()">EXIT ADMIN</button>
   </div>
-
 </div>
-
 
 <div id="app">
   <div class="shell">
-
     <aside class="sidebar">
       <div class="side-brand">DOCDROP</div>
       <nav class="nav">
@@ -265,148 +183,82 @@ button{cursor:pointer}
         <button data-page="account">Account</button>
         <button onclick="logout()">Logout</button>
       </nav>
-      <span class="net-tag" id="netTagSide"><i></i><span>Online</span></span>
-      <div class="side-bottom">
-        THIS DEVICE: <b id="deviceLabel">—</b><br>
-        DOCDROP DOCUMENT TRANSFER
-      </div>
+      <span class="net-tag" id="netTag"><i></i><span>Online</span></span>
+      <div class="side-bottom">THIS DEVICE: <b id="deviceLabel">—</b></div>
     </aside>
 
     <main class="main">
+      <div class="topbar"><div class="logo-tap">DOCDROP</div><span class="badge black" id="topDevice">—</span></div>
 
-      <div class="topbar">
-        <div class="logo-tap">DOCDROP</div>
-        <span class="badge black" id="topDevice">—</span>
-      </div>
-
-      <!-- VAULT -->
       <section class="page active" id="page-vault">
-
         <div class="stats">
           <div class="stat card"><div class="label">DOCUMENTS</div><div class="n" id="statDocs">0</div></div>
           <div class="stat card"><div class="label">STORAGE</div><div class="n" id="statSize">0 KB</div></div>
           <div class="stat card"><div class="label">DEVICES</div><div class="n" id="statDevices">0</div></div>
           <div class="stat card"><div class="label">GROUPS</div><div class="n" id="statGroups">0</div></div>
         </div>
-
         <div class="section-card">
-          <div class="section-head">
-            <div>
-              <div class="label">SYNCED ON ALL YOUR DEVICES</div>
-              <h2>VAULT</h2>
-            </div>
+          <div class="section-head"><div><div class="label">SYNCED ON ALL YOUR DEVICES</div><h2>VAULT</h2></div></div>
+          <div class="dz" data-dz="vault">DROP DOCUMENTS HERE
+            <div class="row"><button class="btn black" onclick="$('fileVault').click()">UPLOAD DOCUMENTS</button></div>
+            <div style="margin-top:8px;font-weight:400;color:#666">Any document up to 5 MB each.</div>
           </div>
-
-          <div class="dz" id="vaultDz" data-dz="vault">
-            DROP DOCUMENTS HERE
-            <div class="row">
-              <button class="btn black" onclick="$('fileVault').click()">UPLOAD DOCUMENTS</button>
-            </div>
-            <div style="margin-top:8px;font-weight:400;color:#666">Any document up to 5 MB each. Opens on every device you sign in on.</div>
-          </div>
-
           <div class="searchbar">
             <input id="vaultSearch" placeholder="Search documents" oninput="S.query=this.value;renderVault()">
             <button class="btn" onclick="downloadAllPdf(vaultDocs(),'vault-pdfs.zip')">DOWNLOAD ALL PDF</button>
           </div>
-
           <div class="list" id="vaultList"></div>
         </div>
       </section>
 
-      <!-- SHARE -->
       <section class="page" id="page-share">
-
         <div class="section-card">
           <div class="section-head"><div><div class="label">GENERATE SHARE OTP</div><h2>SHARE DOCUMENT</h2></div></div>
-          <div class="field">
-            <label>Document</label>
-            <select id="sendDoc"></select>
-          </div>
+          <div class="field"><label>Document</label><select id="sendDoc"></select></div>
           <button class="btn black full" onclick="generateShareOtpFromPage()">GENERATE 6-DIGIT SHARE OTP</button>
         </div>
-
         <div class="section-card">
           <div class="section-head"><div><div class="label">REDEEM OTP</div><h2>RECEIVE SHARED DOCUMENT</h2></div></div>
-          <div class="field">
-            <label>6-Digit Share Code / OTP</label>
-            <input id="redeemOtpInput" maxlength="6" inputmode="numeric" placeholder="000000" autocomplete="off">
-          </div>
+          <div class="field"><label>6-Digit Share Code</label><input id="redeemOtpInput" maxlength="6" inputmode="numeric" placeholder="000000" autocomplete="off"></div>
           <button class="btn black full" onclick="redeemShareOtp()">REDEEM &amp; IMPORT DOCUMENT</button>
         </div>
-
         <div class="section-card">
-          <div class="section-head">
-            <div><div class="label">RECEIVED</div><h2>SHARED WITH ME</h2></div>
-            <button class="btn small" onclick="downloadAllPdf(S.sharedIn,'shared-with-me-pdfs.zip')">DOWNLOAD ALL PDF</button>
-          </div>
+          <div class="section-head"><div><div class="label">RECEIVED</div><h2>SHARED WITH ME</h2></div>
+            <button class="btn small" onclick="downloadAllPdf(S.sharedIn,'shared-with-me-pdfs.zip')">DOWNLOAD ALL PDF</button></div>
           <div class="list" id="inList"></div>
         </div>
-
         <div class="section-card">
           <div class="section-head"><div><div class="label">SENT ACTIVE OTPS</div><h2>MY GENERATED CODES</h2></div></div>
           <div class="list" id="outList"></div>
         </div>
-
       </section>
 
-      <!-- GROUPS -->
-      <section class="page" id="page-groups">
-        <div id="groupsHome"></div>
-        <div id="groupDetail" class="hidden"></div>
-      </section>
+      <section class="page" id="page-groups"><div id="groupsHome"></div><div id="groupDetail" class="hidden"></div></section>
 
-      <!-- ACCOUNT -->
       <section class="page" id="page-account">
-
         <div class="hero-main">
-          <div class="eyebrow">SIGNED IN AS</div>
-          <h1 id="accName">—</h1>
-          <b id="accUser">@user</b>
-          <div class="row" style="margin-top:14px">
-            <button class="btn black" onclick="logout()">LOGOUT</button>
-          </div>
+          <div class="label">SIGNED IN AS</div><h1 id="accName">—</h1><b id="accUser"></b>
+          <div class="row" style="margin-top:14px"><button class="btn black" onclick="logout()">LOGOUT</button></div>
         </div>
-
         <div class="section-card">
-          <div class="section-head"><div><div class="label">THIS DEVICE</div><h2>DEVICE PREFERENCE</h2></div></div>
+          <div class="section-head"><h2>DEVICE PREFERENCE</h2></div>
           <div class="row" id="devicePrefs"></div>
         </div>
-
         <div class="section-card">
-          <div class="section-head">
-            <div><div class="label">SIGNED IN</div><h2>SYNCED DEVICES</h2></div>
-            <button class="btn small" onclick="removeOtherDevices()">REMOVE ALL OTHERS</button>
-          </div>
+          <div class="section-head"><h2>SYNCED DEVICES</h2><button class="btn small" onclick="removeOtherDevices()">REMOVE ALL OTHERS</button></div>
           <div class="list" id="deviceList"></div>
         </div>
-
         <div class="section-card">
-          <div class="section-head"><div><div class="label">VERIFY WITH YOUR ACCESS CODE</div><h2>REMOVE DEVICE WITH CODE</h2></div></div>
-          <div class="field">
-            <label>Device</label>
-            <select id="rmDevice"></select>
-          </div>
-          <div class="field">
-            <label>Your 6-digit access code</label>
-            <input id="rmCode" type="password" maxlength="6" inputmode="numeric" placeholder="000000" autocomplete="off">
-          </div>
+          <div class="section-head"><h2>REMOVE DEVICE WITH CODE</h2></div>
+          <div class="field"><label>Device</label><select id="rmDevice"></select></div>
+          <div class="field"><label>Your 6-digit access code</label><input id="rmCode" type="password" maxlength="6" inputmode="numeric" placeholder="000000" autocomplete="off"></div>
           <button class="btn black full" onclick="removeDeviceWithCode()">REMOVE DEVICE</button>
         </div>
-
-        <div class="section-card">
-          <div class="section-head"><h2>SECURITY</h2></div>
-          <div class="notice">
-            Your access code is stored only as a SHA-256 hash. Document sharing is secured via automatically generated OTP share codes.
-          </div>
-        </div>
-
       </section>
-
     </main>
   </div>
 
-  <div class="mobile-nav" id="mobileNav">
+  <div class="mobile-nav">
     <button data-page="vault" class="active">VAULT</button>
     <button data-page="share">SHARE</button>
     <button data-page="groups">GROUPS</button>
@@ -417,427 +269,198 @@ button{cursor:pointer}
 <input type="file" id="fileVault" multiple class="hidden">
 <input type="file" id="fileGroup" multiple class="hidden">
 
-<!-- SHARE MODAL -->
 <div class="modal hidden" id="shareModal">
   <div class="modal-box">
     <button class="close" onclick="closeModal('shareModal')">×</button>
-    <h2 class="title" style="font-size:26px">SHARE DOCUMENT VIA OTP</h2>
+    <h2 class="title" style="font-size:24px">SHARE VIA OTP</h2>
     <p class="sub" id="shareName"></p>
-    <div id="shareOtpResult" class="notice hidden" style="margin:15px 0;font-size:16px;font-weight:900;text-align:center"></div>
+    <div id="shareOtpResult" class="notice hidden" style="margin:15px 0;font-size:18px;font-weight:900;text-align:center"></div>
     <button class="btn black full" id="genOtpBtn" onclick="generateShareOtpFromModal()">GENERATE 6-DIGIT CODE</button>
   </div>
 </div>
 
-<!-- IN-APP DIALOG -->
 <div class="modal hidden" id="dialogModal">
   <div class="modal-box" style="width:min(420px,100%)">
-    <h2 class="title" id="dlgTitle"></h2>
+    <h2 class="title" id="dlgTitle" style="font-size:22px"></h2>
     <p class="sub" id="dlgMsg"></p>
-    <div class="field hidden" id="dlgField">
-      <input id="dlgInput" autocomplete="off">
-    </div>
+    <div class="field hidden" id="dlgField"><input id="dlgInput" autocomplete="off"></div>
     <div class="row" style="margin-top:16px;justify-content:flex-end">
-      <button class="btn" id="dlgCancel">CANCEL</button>
-      <button class="btn black" id="dlgOk">OK</button>
+      <button class="btn" id="dlgCancel">CANCEL</button><button class="btn black" id="dlgOk">OK</button>
     </div>
   </div>
 </div>
 
-<div class="progress hidden" id="progress">
-  <span id="progText"></span>
-  <div class="xpbar"><div class="xpfill" id="progFill"></div></div>
-</div>
-
+<div class="progress hidden" id="progress"><span id="progText"></span><div class="xpbar"><div class="xpfill" id="progFill"></div></div></div>
 <div class="toast hidden" id="toast"></div>
 
-
 <script>
+const MAX_FILE=5*1024*1024,CHUNK=700000,MAX_MEMBERS=50,MAX_GROUPS=10;
+const S={adminHash:null,user:null,deviceId:"",deviceName:"",files:[],sharedIn:[],myShares:[],groups:[],groupFiles:{},requests:{},myRequests:[],unsubs:[],gsubs:{},openGroup:null,filesLoaded:false,query:"",active:false};
+let selectedDevice=localStorage.getItem("DD_DEVICE_TYPE")||"",codeInput="",busy=false,fails=0,lockUntil=0;
 
-const MAX_FILE=5*1024*1024;
-const CHUNK=700000;
-const MAX_MEMBERS=50;
-const MAX_GROUPS=10;
+const $=id=>document.getElementById(id);
+const esc=v=>String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
+const F=()=>window.DD&&window.DD.db?window.DD:null;
+const uid=()=>crypto.randomUUID?crypto.randomUUID():"id-"+Date.now().toString(36)+Math.random().toString(36).slice(2,12);
+function rnd(n){const a=new Uint32Array(1);crypto.getRandomValues(a);return a[0]%n;}
+function fmtSize(n){n=+n||0;return n<1024?n+" B":n<1048576?(n/1024).toFixed(n<10240?1:0)+" KB":(n/1048576).toFixed(1)+" MB";}
+function timeAgo(t){const s=Math.max(1,Math.floor((Date.now()-(+t||Date.now()))/1000));return s<60?"just now":s<3600?Math.floor(s/60)+"m ago":s<86400?Math.floor(s/3600)+"h ago":Math.floor(s/86400)+"d ago";}
+function extOf(n){const m=/\.([a-z0-9]{1,5})$/i.exec(n||"");return m?m[1].toUpperCase():"FILE";}
+const isPdf=f=>f.type==="application/pdf"||/\.pdf$/i.test(f.name||"");
+const MIME={pdf:"application/pdf",png:"image/png",jpg:"image/jpeg",jpeg:"image/jpeg",gif:"image/gif",webp:"image/webp",txt:"text/plain",csv:"text/csv",doc:"application/msword",docx:"application/vnd.openxmlformats-officedocument.wordprocessingml.document",xls:"application/vnd.ms-excel",xlsx:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",ppt:"application/vnd.ms-powerpoint",pptx:"application/vnd.openxmlformats-officedocument.presentationml.presentation",zip:"application/zip"};
+const mimeOf=f=>f.type&&f.type!=="application/octet-stream"?f.type:MIME[extOf(f.name).toLowerCase()]||"application/octet-stream";
+const previewable=f=>/^(application\/pdf|image\/|text\/plain|text\/csv)/.test(mimeOf(f));
 
-const S={
-  adminHash:null,user:null,deviceId:"",deviceName:"",
-  files:[],sharedIn:[],myShares:[],groups:[],groupFiles:{},requests:{},myRequests:[],
-  users:{},unsubs:[],gsubs:{},page:"vault",openGroup:null,filesLoaded:false,query:"",active:false
-};
-
-let selectedDevice=localStorage.getItem("DD_DEVICE_TYPE")||"";
-let codeInput="";
-let busy=false;
-let fails=0;
-let lockUntil=0;
-
-function $(id){return document.getElementById(id);}
-
-function esc(v){
-  return String(v??"")
-    .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
-    .replace(/"/g,"&quot;").replace(/'/g,"&#039;");
-}
-
-function uid(){
-  if(window.crypto&&typeof crypto.randomUUID==="function"){return crypto.randomUUID();}
-  return "id-"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,10)+Math.random().toString(36).slice(2,6);
-}
-
-function F(){return window.DD&&window.DD.db?window.DD:null;}
-
-function fmtSize(n){
-  n=Number(n)||0;
-  if(n<1024){return n+" B";}
-  if(n<1048576){return (n/1024).toFixed(n<10240?1:0)+" KB";}
-  return (n/1048576).toFixed(1)+" MB";
-}
-
-function timeAgo(t){
-  const s=Math.max(1,Math.floor((Date.now()-Number(t||Date.now()))/1000));
-  if(s<60){return "just now";}
-  if(s<3600){return Math.floor(s/60)+"m ago";}
-  if(s<86400){return Math.floor(s/3600)+"h ago";}
-  return Math.floor(s/86400)+"d ago";
-}
-
-function extOf(name){
-  const m=/\.([a-z0-9]{1,5})$/i.exec(name||"");
-  return m?m[1].toUpperCase():"FILE";
-}
-
-function isPdf(f){
-  return f.type==="application/pdf"||/\.pdf$/i.test(f.name||"");
-}
-
-const MIME={pdf:"application/pdf",png:"image/png",jpg:"image/jpeg",jpeg:"image/jpeg",gif:"image/gif",webp:"image/webp",bmp:"image/bmp",txt:"text/plain",csv:"text/csv",html:"text/html",doc:"application/msword",docx:"application/vnd.openxmlformats-officedocument.wordprocessingml.document",xls:"application/vnd.ms-excel",xlsx:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",ppt:"application/vnd.ms-powerpoint",pptx:"application/vnd.openxmlformats-officedocument.presentationml.presentation",zip:"application/zip"};
-
-function mimeOf(f){
-  if(f.type&&f.type!=="application/octet-stream"){return f.type;}
-  return MIME[extOf(f.name).toLowerCase()]||"application/octet-stream";
-}
-
-function previewable(f){
-  return /^(application\/pdf|image\/|text\/)/.test(mimeOf(f));
-}
-
-/* ---------- toast / dialogs / modals ---------- */
-
-function toast(msg){
-  const el=$("toast");
-  el.textContent=msg;
-  el.classList.remove("hidden");
-  clearTimeout(toast.t);
-  toast.t=setTimeout(()=>el.classList.add("hidden"),2600);
-}
-
-function showProgress(text,pct){
-  $("progress").classList.remove("hidden");
-  $("progText").textContent=text;
-  $("progFill").style.width=Math.max(0,Math.min(100,pct||0))+"%";
-}
-
-function hideProgress(){
-  $("progress").classList.add("hidden");
-}
-
-function openModal(id){$(id).classList.remove("hidden");}
-function closeModal(id){$(id).classList.add("hidden");}
+function toast(m){const e=$("toast");e.textContent=m;e.classList.remove("hidden");clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.add("hidden"),2800);}
+function showProgress(t,p){$("progress").classList.remove("hidden");$("progText").textContent=t;$("progFill").style.width=Math.max(0,Math.min(100,p||0))+"%";}
+const hideProgress=()=>$("progress").classList.add("hidden");
+const openModal=id=>$(id).classList.remove("hidden"),closeModal=id=>$(id).classList.add("hidden");
 
 function xDialog(o){
   return new Promise(res=>{
     const m=$("dialogModal"),inp=$("dlgInput");
-    $("dlgTitle").textContent=o.title||"";
-    $("dlgMsg").textContent=o.message||"";
+    $("dlgTitle").textContent=o.title||"";$("dlgMsg").textContent=o.message||"";
     $("dlgField").classList.toggle("hidden",!o.input);
-    inp.type="text";
-    inp.value=o.value||"";
-    inp.placeholder=o.placeholder||"";
+    inp.value=o.value||"";inp.placeholder=o.placeholder||"";
     $("dlgOk").textContent=o.ok||"OK";
     m.classList.remove("hidden");
     if(o.input){setTimeout(()=>inp.focus(),60);}
-    const done=v=>{
-      m.classList.add("hidden");
-      $("dlgOk").onclick=null;$("dlgCancel").onclick=null;inp.onkeydown=null;
-      res(v);
-    };
+    const done=v=>{m.classList.add("hidden");$("dlgOk").onclick=$("dlgCancel").onclick=inp.onkeydown=null;res(v);};
     $("dlgOk").onclick=()=>done(o.input?inp.value:true);
     $("dlgCancel").onclick=()=>done(o.input?null:false);
-    inp.onkeydown=e=>{
-      if(e.key==="Enter"){e.preventDefault();$("dlgOk").click();}
-      else if(e.key==="Escape"){$("dlgCancel").click();}
-    };
+    inp.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();$("dlgOk").click();}else if(e.key==="Escape"){$("dlgCancel").click();}};
   });
 }
+const askConfirm=(title,message,ok)=>xDialog({title,message,ok:ok||"CONFIRM"});
+const askPrompt=(title,message,value,placeholder)=>xDialog({title,message,input:true,value,placeholder,ok:"CONTINUE"});
 
-function askConfirm(title,message,ok){return xDialog({title,message,ok:ok||"CONFIRM"});}
-function askPrompt(title,message,value,placeholder){return xDialog({title,message,input:true,value,placeholder,ok:"CONTINUE"});}
-
-/* ---------- hashing ---------- */
-
-function cyrb53(str){
-  let h1=0xdeadbeef,h2=0x41c6ce57;
-  for(let i=0;i<str.length;i++){
-    const ch=str.charCodeAt(i);
-    h1=Math.imul(h1^ch,2654435761);
-    h2=Math.imul(h2^ch,1597334677);
-  }
-  h1=Math.imul(h1^(h1>>>16),2246822507)^Math.imul(h2^(h2>>>13),3266489909);
-  h2=Math.imul(h2^(h2>>>16),2246822507)^Math.imul(h1^(h1>>>13),3266489909);
-  return (4294967296*(2097151&h2)+(h1>>>0)).toString(36);
-}
-
+/* hashing — same scheme as before so existing accounts still work */
+function cyrb53(s){let a=0xdeadbeef,b=0x41c6ce57;for(let i=0;i<s.length;i++){const c=s.charCodeAt(i);a=Math.imul(a^c,2654435761);b=Math.imul(b^c,1597334677);}
+  a=Math.imul(a^(a>>>16),2246822507)^Math.imul(b^(b>>>13),3266489909);b=Math.imul(b^(b>>>16),2246822507)^Math.imul(a^(a>>>13),3266489909);
+  return (4294967296*(2097151&b)+(a>>>0)).toString(36);}
 async function hashCode(code){
-  const data="docdrop|v1|"+code;
-  try{
-    if(window.crypto&&crypto.subtle){
-      const buf=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(data));
-      return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join("");
-    }
-  }catch(e){}
-  return "f"+cyrb53(data)+cyrb53(data+"|2");
+  const d="docdrop|v1|"+code;
+  try{if(crypto.subtle){const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(d));return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,"0")).join("");}}catch(e){}
+  return "f"+cyrb53(d)+cyrb53(d+"|2");
 }
 
-/* ---------- device + login screens ---------- */
+/* device + login screens */
+const isPC=()=>selectedDevice==="PC";
+function chooseDevice(d){selectedDevice=d;document.querySelectorAll(".device").forEach(x=>x.classList.toggle("active",x.dataset.device===d));}
+document.querySelectorAll(".device").forEach(b=>b.onclick=()=>chooseDevice(b.dataset.device));
+if(selectedDevice){chooseDevice(selectedDevice);}
 
-function isPC(){return selectedDevice==="PC";}
+$("keypad").innerHTML=["1","2","3","4","5","6","7","8","9","back","0","clear"].map(k=>`<button class="key${k==="0"?" zero":""}" data-key="${k}">${k==="back"?"←":k==="clear"?"C":k}</button>`).join("");
 
-function chooseDevice(d){
-  selectedDevice=d;
-  document.querySelectorAll(".device").forEach(x=>x.classList.toggle("active",x.dataset.device===d));
-}
-
-document.querySelectorAll(".device").forEach(b=>b.addEventListener("click",()=>chooseDevice(b.dataset.device)));
-
-if(selectedDevice&&document.querySelector('.device[data-device="'+selectedDevice+'"]')){chooseDevice(selectedDevice);}
-
-$("deviceContinue").onclick=function(){
+$("deviceContinue").onclick=()=>{
   if(!selectedDevice){toast("Choose your device first.");return;}
   localStorage.setItem("DD_DEVICE_TYPE",selectedDevice);
-  $("deviceScreen").classList.add("hidden");
-  $("accountScreen").classList.remove("hidden");
-  codeInput="";
-  updateAuthUI();
-};
-
-$("backToDevice").onclick=function(){
-  codeInput="";
-  $("accountScreen").classList.add("hidden");
-  $("deviceScreen").classList.remove("hidden");
-  if(selectedDevice){chooseDevice(selectedDevice);}
-  renderDots();
-};
-
-function updateAuthUI(){
+  $("deviceScreen").classList.add("hidden");$("accountScreen").classList.remove("hidden");
   $("accountScreen").classList.toggle("pc-mode",isPC());
-  $("authTitle").textContent="ACCESS VAULT";
-  $("authSub").textContent=isPC()
-    ?"Type your 6-digit access code on your keyboard. Backspace deletes, Esc clears."
-    :"Enter your 6-digit access code.";
-  renderDots();
-}
+  $("authSub").textContent=isPC()?"Type your 6-digit access code. Backspace deletes, Esc clears.":"Enter your 6-digit access code.";
+  codeInput="";renderDots();
+};
+$("backToDevice").onclick=()=>{codeInput="";$("accountScreen").classList.add("hidden");$("deviceScreen").classList.remove("hidden");renderDots();};
 
-function renderDots(){
-  const el=$("codeDots");
-  el.innerHTML="";
-  for(let i=0;i<6;i++){
-    const d=document.createElement("div");
-    d.className="dot"+(i<codeInput.length?" fill":"");
-    el.appendChild(d);
-  }
-}
-
-function resetCode(){
-  codeInput="";
-  renderDots();
-}
-
-document.querySelectorAll(".key").forEach(key=>{
-  key.addEventListener("click",()=>{
-    const v=key.dataset.key;
-    if(v==="back"){codeInput=codeInput.slice(0,-1);}
-    else if(v==="clear"){codeInput="";}
-    else if(/^\d$/.test(v)){if(codeInput.length<6){codeInput+=v;}}
-    renderDots();
-    if(codeInput.length===6){setTimeout(processAuth,100);}
-  });
-});
-
-document.addEventListener("keydown",e=>{
-  if($("accountScreen").classList.contains("hidden")){return;}
-  if($("onboard").style.display==="none"){return;}
-  if(!isPC()){return;}
-  const t=e.target;
-  if(t&&(t.tagName==="INPUT"||t.tagName==="TEXTAREA")){return;}
-  if(/^\d$/.test(e.key)){
-    if(codeInput.length<6){codeInput+=e.key;}
-  }else if(e.key==="Backspace"){
-    e.preventDefault();
-    codeInput=codeInput.slice(0,-1);
-  }else if(e.key==="Delete"||e.key==="Escape"){
-    codeInput="";
-  }else{
-    return;
-  }
+function renderDots(){$("codeDots").innerHTML=Array.from({length:6},(_,i)=>`<div class="dot${i<codeInput.length?" fill":""}"></div>`).join("");}
+function resetCode(){codeInput="";renderDots();}
+function pushKey(v){
+  if(v==="back"){codeInput=codeInput.slice(0,-1);}
+  else if(v==="clear"){codeInput="";}
+  else if(/^\d$/.test(v)&&codeInput.length<6){codeInput+=v;}
   renderDots();
   if(codeInput.length===6){setTimeout(processAuth,100);}
+}
+document.querySelectorAll(".key").forEach(k=>k.onclick=()=>pushKey(k.dataset.key));
+document.addEventListener("keydown",e=>{
+  if($("accountScreen").classList.contains("hidden")||$("onboard").style.display==="none"||!isPC()){return;}
+  const t=e.target;if(t&&t.tagName==="INPUT"){return;}
+  if(/^\d$/.test(e.key)){pushKey(e.key);}
+  else if(e.key==="Backspace"){e.preventDefault();pushKey("back");}
+  else if(e.key==="Delete"||e.key==="Escape"){pushKey("clear");}
 });
 
-/* ---------- cloud ---------- */
-
-function waitCloud(ms){
-  return new Promise(res=>{
-    if(window.DD&&window.DD.db){return res(true);}
-    let done=false;
-    const fin=ok=>{if(!done){done=true;res(!!ok);}};
-    setTimeout(()=>fin(!!(window.DD&&window.DD.db)),ms);
-    window.addEventListener("dd-firebase-ready",()=>fin(true),{once:true});
-    window.addEventListener("dd-firebase-error",()=>fin(false),{once:true});
-  });
-}
-
+/* cloud */
+async function waitCloud(ms){return Promise.race([window.DDready,new Promise(r=>setTimeout(()=>r(false),ms))]).then(ok=>!!(ok&&F()));}
 function cloudErr(e){
   console.warn("DocDrop cloud error",e);
-  const code=e&&e.code?String(e.code):"";
-  if(code.indexOf("permission")>=0){toast("Database permission denied. Check your Firestore rules.");}
-  else{toast("Cloud error. Check your connection.");}
+  const c=e&&e.code?String(e.code):"";
+  toast(c.indexOf("permission")>=0?"Database permission denied. Check your Firestore rules.":"Cloud error. Check your connection.");
 }
 
-/* ---------- auth ---------- */
-
-function getDeviceId(){
-  let id=localStorage.getItem("DD_DEVICE_ID");
-  if(!id){
-    id="d"+Math.random().toString(36).slice(2,10)+Date.now().toString(36);
-    localStorage.setItem("DD_DEVICE_ID",id);
-  }
-  return id;
-}
+/* auth */
+function getDeviceId(){let id=localStorage.getItem("DD_DEVICE_ID");if(!id){id="d"+uid().replace(/-/g,"").slice(0,16);localStorage.setItem("DD_DEVICE_ID",id);}return id;}
 
 async function processAuth(){
   if(busy){return;}
   busy=true;
   try{
-    if(Date.now()<lockUntil){
-      toast("Too many attempts. Try again in "+Math.ceil((lockUntil-Date.now())/1000)+"s.");
-      resetCode();
-      return;
-    }
-    if(!(await waitCloud(4000))){
-      toast("Cloud unavailable. Check your connection.");
-      resetCode();
-      return;
-    }
+    if(Date.now()<lockUntil){toast("Too many attempts. Try again in "+Math.ceil((lockUntil-Date.now())/1000)+"s.");resetCode();return;}
+    if(!(await waitCloud(8000))){toast("Cloud unavailable. Check your connection.");resetCode();return;}
     await doLogin();
-  }catch(e){
-    cloudErr(e);
-    resetCode();
-  }finally{
-    busy=false;
-  }
+  }catch(e){cloudErr(e);resetCode();}
+  finally{busy=false;}
 }
-
 function failCode(){
   fails++;
-  if(fails>=5){
-    fails=0;
-    lockUntil=Date.now()+60000;
-    toast("Too many wrong codes. Locked for 60 seconds.");
-  }else{
-    toast("Incorrect access code.");
-  }
+  if(fails>=5){fails=0;lockUntil=Date.now()+60000;toast("Too many wrong codes. Locked for 60 seconds.");}
+  else{toast("Incorrect access code.");}
   resetCode();
 }
 
 async function doLogin(){
-  const c=F();
-  const h=await hashCode(codeInput);
-  const adm=await c.getDoc(c.doc(c.db,"dd_admin","main"));
-  S.adminHash=adm.exists()?adm.data().codeHash:null;
-  if(S.adminHash&&h===S.adminHash){
-    fails=0;
-    await openAdmin();
-    return;
-  }
+  const c=F(),h=await hashCode(codeInput);
+  const adm=await c.getDoc(c.doc(c.db,"dd_admin","main")).catch(()=>null);
+  S.adminHash=adm&&adm.exists()?adm.data().codeHash:null;
+  if(S.adminHash&&h===S.adminHash){fails=0;await openAdmin();return;}
   const claim=await c.getDoc(c.doc(c.db,"dd_claims","c_"+h));
   if(!claim.exists()){
     if(!S.adminHash){
-      const ok=await askConfirm("SET ADMIN CODE","No admin code has been set yet. Use this code as the admin code? Do this right after you deploy the app.","SET ADMIN CODE");
-      if(ok){
+      if(await askConfirm("SET ADMIN CODE","No admin code has been set yet. Use this code as the admin code? Do this right after you deploy the app.","SET ADMIN CODE")){
         await c.setDoc(c.doc(c.db,"dd_admin","main"),{codeHash:h,updated:Date.now()});
-        S.adminHash=h;
-        fails=0;
-        await openAdmin();
-        return;
+        S.adminHash=h;fails=0;await openAdmin();return;
       }
-      resetCode();
-      return;
+      resetCode();return;
     }
-    failCode();
-    return;
+    failCode();return;
   }
-  const uidv=claim.data().owner;
-  const snap=await c.getDoc(c.doc(c.db,"dd_users",uidv));
+  const id=claim.data().owner;
+  const snap=await c.getDoc(c.doc(c.db,"dd_users",id));
   if(!snap.exists()||snap.data().codeHash!==h){failCode();return;}
   fails=0;
-  await finishLogin({id:uidv,...snap.data()});
+  await finishLogin({...snap.data(),id});
 }
 
-/* ---------- admin panel ---------- */
-
-async function openAdmin(){
-  $("accountScreen").classList.add("hidden");
-  $("adminScreen").classList.remove("hidden");
-  resetCode();
-  await loadAdminUsers();
-}
+/* admin */
+async function openAdmin(){$("accountScreen").classList.add("hidden");$("adminScreen").classList.remove("hidden");resetCode();await loadAdminUsers();}
 
 async function loadAdminUsers(){
   const c=F();
   try{
     const snap=await c.getDocs(c.collection(c.db,"dd_users"));
-    const us=snap.docs.map(d=>d.data()).sort((a,b)=>(a.created||0)-(b.created||0));
-    $("admList").innerHTML=us.map(u=>`
-      <div class="item">
-        <div class="left">
-          <div class="mini-avatar">${esc((u.name||"?")[0].toUpperCase())}</div>
-          <div><b>${esc(u.name)}</b><small>@${esc(u.username)} • ${Object.keys(u.devices||{}).length} device(s)</small></div>
-        </div>
-        <button class="btn small" onclick="adminRemove('${esc(u.id)}')">REMOVE</button>
-      </div>
-    `).join("")||`<div class="notice">No accounts yet. Add the first one above.</div>`;
+    const us=snap.docs.map(d=>({...d.data(),id:d.id})).sort((a,b)=>(a.created||0)-(b.created||0));
+    $("admList").innerHTML=us.map(u=>`<div class="item"><div class="left"><div class="mini-avatar">${esc((u.name||"?")[0].toUpperCase())}</div><div><b>${esc(u.name)}</b><small>@${esc(u.username)} • ${Object.keys(u.devices||{}).length} device(s)</small></div></div><button class="btn small" onclick="adminRemove('${esc(u.id)}')">REMOVE</button></div>`).join("")||`<div class="notice">No accounts yet. Add the first one above.</div>`;
   }catch(e){cloudErr(e);}
 }
 
 async function adminAdd(){
-  const name=$("admName").value.trim();
-  const username=$("admUser").value.trim().replace(/^@/,"").toLowerCase();
-  const code=$("admCode").value.trim();
-
+  const name=$("admName").value.trim(),username=$("admUser").value.trim().replace(/^@/,"").toLowerCase(),code=$("admCode").value.trim();
   if(!name||!username){toast("Enter name and username.");return;}
   if(!/^[a-z0-9_.]{3,20}$/.test(username)){toast("Username: 3-20 letters, numbers, _ or .");return;}
   if(!/^\d{6}$/.test(code)){toast("Code must contain 6 digits.");return;}
-
-  const c=F();
-  const h=await hashCode(code);
+  const c=F(),h=await hashCode(code);
   if(h===S.adminHash){toast("That code is reserved. Use another.");return;}
-  const id=uid();
-  const uRef=c.doc(c.db,"dd_claims","u_"+username);
-  const kRef=c.doc(c.db,"dd_claims","c_"+h);
-  const userRef=c.doc(c.db,"dd_users",id);
-
+  const id=uid(),uRef=c.doc(c.db,"dd_claims","u_"+username),kRef=c.doc(c.db,"dd_claims","c_"+h),userRef=c.doc(c.db,"dd_users",id);
   try{
     await c.runTransaction(c.db,async tx=>{
-      const u=await tx.get(uRef);
-      const k=await tx.get(kRef);
+      const u=await tx.get(uRef),k=await tx.get(kRef);
       if(u.exists()){throw new Error("USERNAME");}
       if(k.exists()){throw new Error("CODE");}
-      tx.set(uRef,{owner:id,t:Date.now()});
-      tx.set(kRef,{owner:id,t:Date.now()});
+      tx.set(uRef,{owner:id,t:Date.now()});tx.set(kRef,{owner:id,t:Date.now()});
       tx.set(userRef,{id,name,username,codeHash:h,created:Date.now(),devices:{}});
     });
-    $("admName").value="";$("admUser").value="";$("admCode").value="";
-    toast("User added.");
-    loadAdminUsers();
+    $("admName").value=$("admUser").value=$("admCode").value="";
+    toast("User added.");loadAdminUsers();
   }catch(e){
     if(e&&e.message==="USERNAME"){toast("Username already exists.");}
     else if(e&&e.message==="CODE"){toast("That code is already in use.");}
@@ -852,19 +475,16 @@ async function adminRemove(id){
     const ud=await c.getDoc(c.doc(c.db,"dd_users",id));
     if(!ud.exists()){loadAdminUsers();return;}
     const u=ud.data();
-    const fs=await c.getDocs(c.query(c.collection(c.db,"dd_files"),c.where("owner","==",id)));
-    for(const d of fs.docs){await destroyFile(d.data());}
-    const sh=await c.getDocs(c.query(c.collection(c.db,"dd_shares"),c.where("owner","==",id)));
-    for(const d of sh.docs){await c.deleteDoc(d.ref);}
-    const gs=await c.getDocs(c.query(c.collection(c.db,"dd_groups"),c.where("members","array-contains",id)));
-    for(const d of gs.docs){
-      await c.updateDoc(d.ref,{members:c.arrayRemove(id),admins:c.arrayRemove(id)});
-    }
+    const q=(col,f,op,v)=>c.getDocs(c.query(c.collection(c.db,col),c.where(f,op,v)));
+    for(const d of (await q("dd_files","owner","==",id)).docs){await destroyFile(d.data());}
+    for(const d of (await q("dd_files","sharedWith","array-contains",id)).docs){await c.updateDoc(d.ref,{sharedWith:c.arrayRemove(id)});}
+    for(const d of (await q("dd_shares","owner","==",id)).docs){await c.deleteDoc(d.ref);}
+    for(const d of (await q("dd_requests","uid","==",id)).docs){await c.deleteDoc(d.ref);}
+    for(const d of (await q("dd_groups","members","array-contains",id)).docs){await c.updateDoc(d.ref,{members:c.arrayRemove(id),admins:c.arrayRemove(id)});}
     await c.deleteDoc(c.doc(c.db,"dd_claims","u_"+u.username));
     await c.deleteDoc(c.doc(c.db,"dd_claims","c_"+u.codeHash));
     await c.deleteDoc(ud.ref);
-    toast("User removed.");
-    loadAdminUsers();
+    toast("User removed.");loadAdminUsers();
   }catch(e){cloudErr(e);}
 }
 
@@ -877,542 +497,326 @@ async function adminChangeCode(){
     const h=await hashCode(a);
     if((await c.getDoc(c.doc(c.db,"dd_claims","c_"+h))).exists()){toast("A user already uses that code. Choose another.");return;}
     await c.setDoc(c.doc(c.db,"dd_admin","main"),{codeHash:h,updated:Date.now()});
-    S.adminHash=h;
-    $("admNew").value="";$("admNew2").value="";
+    S.adminHash=h;$("admNew").value=$("admNew2").value="";
     toast("Admin code changed.");
   }catch(e){cloudErr(e);}
 }
 
-/* ---------- session ---------- */
-
+/* session */
 async function registerDevice(){
-  const c=F();
-  const id=S.deviceId;
-  const devs=S.user.devices||{};
-  const type=selectedDevice||"PC";
+  const c=F(),id=S.deviceId,devs=S.user.devices||{},type=selectedDevice||"PC";
   let name=devs[id]&&devs[id].name;
   if(!name){
     name=type;
     const names=Object.keys(devs).map(k=>devs[k].name);
-    let n=2;
-    while(names.includes(name)){name=type+" "+n;n++;}
+    for(let n=2;names.includes(name);n++){name=type+" "+n;}
   }
   S.deviceName=name;
-  await c.updateDoc(c.doc(c.db,"dd_users",S.user.id),{["devices."+id]:{type,name,seen:Date.now()}});
-  S.user.devices=Object.assign({},devs,{[id]:{type,name,seen:Date.now()}});
+  const rec={type,name,seen:Date.now()};
+  await c.updateDoc(c.doc(c.db,"dd_users",S.user.id),{["devices."+id]:rec});
+  S.user.devices={...devs,[id]:rec};
 }
-
 async function finishLogin(user){
-  S.user=user;
-  S.deviceId=getDeviceId();
+  S.user=user;S.deviceId=getDeviceId();
   await registerDevice();
   sessionStorage.setItem("DD_SESSION",user.id);
   enterApp();
 }
-
 async function resumeSession(){
   const sid=sessionStorage.getItem("DD_SESSION");
   if(!sid){return;}
   $("onboard").style.visibility="hidden";
   try{
-    if(!(await waitCloud(4000))){throw new Error("offline");}
-    const c=F();
-    const snap=await c.getDoc(c.doc(c.db,"dd_users",sid));
+    if(!(await waitCloud(8000))){throw new Error("offline");}
+    const c=F(),snap=await c.getDoc(c.doc(c.db,"dd_users",sid));
     if(!snap.exists()){throw new Error("gone");}
-    const u={id:sid,...snap.data()};
-    const dev=localStorage.getItem("DD_DEVICE_ID");
+    const u={...snap.data(),id:sid},dev=localStorage.getItem("DD_DEVICE_ID");
     if(!dev||!(u.devices||{})[dev]){throw new Error("device");}
-    S.user=u;
-    S.deviceId=dev;
-    S.deviceName=u.devices[dev].name;
+    S.user=u;S.deviceId=dev;S.deviceName=u.devices[dev].name;
     selectedDevice=u.devices[dev].type||selectedDevice;
     enterApp();
-  }catch(e){
-    sessionStorage.removeItem("DD_SESSION");
-  }
+  }catch(e){sessionStorage.removeItem("DD_SESSION");}
   $("onboard").style.visibility="visible";
 }
-
-async function logout(){
-  if(!(await askConfirm("LOG OUT","Do you want to log out of DocDrop?","LOG OUT"))){return;}
-  doLogout();
-}
-
+async function logout(){if(await askConfirm("LOG OUT","Do you want to log out of DocDrop?","LOG OUT")){doLogout();}}
 function doLogout(msg){
   S.unsubs.forEach(u=>{try{u();}catch(e){}});
-  Object.keys(S.gsubs).forEach(k=>{try{S.gsubs[k]();}catch(e){}});
+  Object.values(S.gsubs).forEach(u=>{try{u();}catch(e){}});
   sessionStorage.removeItem("DD_SESSION");
   if(msg){sessionStorage.setItem("DD_MSG",msg);}
   location.reload();
 }
 
-/* ---------- app entry + listeners ---------- */
-
+/* app entry + listeners */
 function enterApp(){
-  $("onboard").style.display="none";
-  $("app").style.display="block";
+  $("onboard").style.display="none";$("app").style.display="block";
   S.active=true;
-  $("deviceLabel").textContent=S.deviceName;
-  $("topDevice").textContent=S.deviceName;
-  startListeners();
-  renderAll();
+  $("deviceLabel").textContent=$("topDevice").textContent=S.deviceName;
+  startListeners();renderAll();
 }
-
-function sub(ref,cb){
-  const c=F();
-  const u=c.onSnapshot(ref,cb,err=>cloudErr(err));
-  S.unsubs.push(u);
-}
+function sub(ref,cb){S.unsubs.push(F().onSnapshot(ref,cb,cloudErr));}
 
 function startListeners(){
-  const c=F();
-  const me=S.user.id;
-
+  const c=F(),me=S.user.id,col=n=>c.collection(c.db,n);
   sub(c.doc(c.db,"dd_users",me),snap=>{
     if(!snap.exists()){doLogout("This account was removed by the admin.");return;}
-    S.user={id:me,...snap.data()};
+    S.user={...snap.data(),id:me};
     if(!(S.user.devices||{})[S.deviceId]){doLogout("This device was removed from the account.");return;}
     S.deviceName=S.user.devices[S.deviceId].name;
-    $("deviceLabel").textContent=S.deviceName;
-    $("topDevice").textContent=S.deviceName;
+    $("deviceLabel").textContent=$("topDevice").textContent=S.deviceName;
     renderAll();
   });
-
-  sub(c.query(c.collection(c.db,"dd_files"),c.where("owner","==",me)),snap=>{
+  sub(c.query(col("dd_files"),c.where("owner","==",me)),snap=>{
     const list=snap.docs.map(d=>d.data());
     if(S.filesLoaded){
       const known=new Set(S.files.map(f=>f.id));
-      list.forEach(f=>{
-        if(!known.has(f.id)&&f.device!==S.deviceId&&f.personal!==false&&Date.now()-f.created<120000){
-          toast("New document from "+(f.deviceLabel||"another device")+": "+f.name);
-        }
-      });
+      list.forEach(f=>{if(!known.has(f.id)&&f.device!==S.deviceId&&f.personal!==false&&Date.now()-f.created<120000){toast("New document from "+(f.deviceLabel||"another device")+": "+f.name);}});
     }
-    S.files=list;
-    S.filesLoaded=true;
-    renderAll();
+    S.files=list;S.filesLoaded=true;renderAll();
   });
-
-  sub(c.query(c.collection(c.db,"dd_files"),c.where("sharedWith","array-contains",me)),snap=>{
-    S.sharedIn=snap.docs.map(d=>d.data());
-    renderAll();
-  });
-
-  sub(c.query(c.collection(c.db,"dd_shares"),c.where("owner","==",me)),snap=>{
-    S.myShares=snap.docs.map(d=>d.data());
-    renderAll();
-  });
-
-  sub(c.query(c.collection(c.db,"dd_groups"),c.where("members","array-contains",me)),snap=>{
+  sub(c.query(col("dd_files"),c.where("sharedWith","array-contains",me)),snap=>{S.sharedIn=snap.docs.map(d=>d.data());renderAll();});
+  sub(c.query(col("dd_shares"),c.where("owner","==",me)),snap=>{S.myShares=snap.docs.map(d=>d.data());renderAll();});
+  sub(c.query(col("dd_groups"),c.where("members","array-contains",me)),snap=>{
     S.groups=snap.docs.map(d=>d.data());
     syncGroupListeners();
     if(S.openGroup&&!S.groups.find(g=>g.id===S.openGroup)){S.openGroup=null;}
     renderAll();
   });
-
-  sub(c.query(c.collection(c.db,"dd_requests"),c.where("uid","==",me)),snap=>{
-    S.myRequests=snap.docs.map(d=>d.data());
-    renderAll();
-  });
+  sub(c.query(col("dd_requests"),c.where("uid","==",me)),snap=>{S.myRequests=snap.docs.map(d=>d.data());renderAll();});
 }
 
 function syncGroupListeners(){
-  const c=F();
-  const me=S.user.id;
-  const want={};
-
-  S.groups.forEach(g=>{
-    want["f:"+g.id]=g.id;
-    if((g.admins||[]).includes(me)){want["r:"+g.id]=g.id;}
-  });
-
+  const c=F(),me=S.user.id,want={};
+  S.groups.forEach(g=>{want["f:"+g.id]=g.id;if((g.admins||[]).includes(me)){want["r:"+g.id]=g.id;}});
   Object.keys(S.gsubs).forEach(k=>{
     if(!(k in want)){
       try{S.gsubs[k]();}catch(e){}
       delete S.gsubs[k];
-      const gid=k.slice(2);
-      if(k[0]==="f"){delete S.groupFiles[gid];}
-      else{delete S.requests[gid];}
+      if(k[0]==="f"){delete S.groupFiles[k.slice(2)];}else{delete S.requests[k.slice(2)];}
     }
   });
-
   Object.keys(want).forEach(k=>{
     if(S.gsubs[k]){return;}
     const gid=want[k];
     if(k[0]==="f"){
-      S.gsubs[k]=c.onSnapshot(c.query(c.collection(c.db,"dd_files"),c.where("groups","array-contains",gid)),snap=>{
-        S.groupFiles[gid]=snap.docs.map(d=>d.data());
-        renderAll();
-      },cloudErr);
+      S.gsubs[k]=c.onSnapshot(c.query(c.collection(c.db,"dd_files"),c.where("groups","array-contains",gid)),snap=>{S.groupFiles[gid]=snap.docs.map(d=>d.data());renderAll();},cloudErr);
     }else{
-      S.gsubs[k]=c.onSnapshot(c.query(c.collection(c.db,"dd_requests"),c.where("gid","==",gid)),snap=>{
-        S.requests[gid]=snap.docs.map(d=>d.data());
-        renderAll();
-      },cloudErr);
+      S.gsubs[k]=c.onSnapshot(c.query(c.collection(c.db,"dd_requests"),c.where("gid","==",gid)),snap=>{S.requests[gid]=snap.docs.map(d=>d.data());renderAll();},cloudErr);
     }
   });
 }
 
-/* ---------- files ---------- */
-
+/* files */
 function findFile(id){
   let f=S.files.find(x=>x.id===id)||S.sharedIn.find(x=>x.id===id);
   if(f){return f;}
-  const keys=Object.keys(S.groupFiles);
-  for(let i=0;i<keys.length;i++){
-    f=S.groupFiles[keys[i]].find(x=>x.id===id);
-    if(f){return f;}
-  }
+  for(const k of Object.keys(S.groupFiles)){f=S.groupFiles[k].find(x=>x.id===id);if(f){return f;}}
   return null;
 }
-
-function readB64(file){
-  return new Promise((res,rej)=>{
-    const r=new FileReader();
-    r.onload=()=>{const s=String(r.result);res(s.slice(s.indexOf(",")+1));};
-    r.onerror=()=>rej(r.error);
-    r.readAsDataURL(file);
-  });
-}
+const readB64=file=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>{const s=String(r.result);res(s.slice(s.indexOf(",")+1));};r.onerror=()=>rej(r.error);r.readAsDataURL(file);});
 
 async function handleFiles(list,target){
   const files=Array.from(list||[]);
   if(!files.length){return;}
   if(!F()){toast("Cloud unavailable.");return;}
   for(const file of files){
-    if(file.size>MAX_FILE){
-      toast(file.name+" is larger than 5 MB and was skipped.");
-      continue;
-    }
-    try{
-      await uploadOne(file,target);
-    }catch(e){
-      cloudErr(e);
-    }
+    if(file.size>MAX_FILE){toast(file.name+" is larger than 5 MB and was skipped.");continue;}
+    if(!file.size){toast(file.name+" is empty and was skipped.");continue;}
+    try{await uploadOne(file,target);}catch(e){cloudErr(e);}
   }
   hideProgress();
 }
 
 async function uploadOne(file,target){
-  const c=F();
-  const id=uid();
-  const b64=await readB64(file);
-  const total=Math.max(1,Math.ceil(b64.length/CHUNK));
-
-  for(let i=0;i<total;i++){
-    showProgress("Uploading "+file.name+" ("+(i+1)+"/"+total+")",(i/total)*100);
-    await c.setDoc(c.doc(c.db,"dd_chunks",id+"_"+i),{f:id,i,d:b64.slice(i*CHUNK,(i+1)*CHUNK)});
+  const c=F(),id=uid(),b64=await readB64(file),total=Math.max(1,Math.ceil(b64.length/CHUNK));
+  let done=0;
+  try{
+    for(let i=0;i<total;i+=4){
+      const batch=[];
+      for(let j=i;j<Math.min(i+4,total);j++){
+        batch.push(c.setDoc(c.doc(c.db,"dd_chunks",id+"_"+j),{f:id,i:j,d:b64.slice(j*CHUNK,(j+1)*CHUNK)}).then(()=>{done++;showProgress("Uploading "+file.name+" ("+done+"/"+total+")",(done/total)*100);}));
+      }
+      await Promise.all(batch);
+    }
+    await c.setDoc(c.doc(c.db,"dd_files",id),{id,name:file.name,size:file.size,type:file.type||"",chunks:total,owner:S.user.id,device:S.deviceId,deviceLabel:S.deviceName,created:Date.now(),personal:!target.group,sharedWith:[],groups:target.group?[target.group]:[]});
+  }catch(e){
+    for(let i=0;i<total;i++){c.deleteDoc(c.doc(c.db,"dd_chunks",id+"_"+i)).catch(()=>{});}
+    throw e;
   }
-
-  await c.setDoc(c.doc(c.db,"dd_files",id),{
-    id,
-    name:file.name,
-    size:file.size,
-    type:file.type||"",
-    chunks:total,
-    owner:S.user.id,
-    device:S.deviceId,
-    deviceLabel:S.deviceName,
-    created:Date.now(),
-    personal:!target.group,
-    sharedWith:[],
-    groups:target.group?[target.group]:[]
-  });
-
   toast("Uploaded "+file.name);
 }
 
 async function fetchBytes(f){
   const c=F();
+  const parts=await Promise.all(Array.from({length:f.chunks},(_,i)=>c.getDoc(c.doc(c.db,"dd_chunks",f.id+"_"+i))));
   let s="";
-  for(let i=0;i<f.chunks;i++){
-    const d=await c.getDoc(c.doc(c.db,"dd_chunks",f.id+"_"+i));
-    if(!d.exists()){throw new Error("Missing part of "+f.name);}
-    s+=d.data().d;
-  }
-  const bin=atob(s);
-  const bytes=new Uint8Array(bin.length);
+  for(const d of parts){if(!d.exists()){throw new Error("Missing part of "+f.name);}s+=d.data().d;}
+  const bin=atob(s),bytes=new Uint8Array(bin.length);
   for(let i=0;i<bin.length;i++){bytes[i]=bin.charCodeAt(i);}
   return bytes;
 }
-
 function saveBlob(blob,name){
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement("a");
-  a.href=url;
-  a.download=name;
-  document.body.appendChild(a);
-  a.click();
+  const url=URL.createObjectURL(blob),a=document.createElement("a");
+  a.href=url;a.download=name;document.body.appendChild(a);a.click();
   setTimeout(()=>{a.remove();URL.revokeObjectURL(url);},4000);
 }
-
 async function downloadFile(id){
-  const f=findFile(id);
-  if(!f){return;}
-  try{
-    showProgress("Downloading "+f.name,30);
-    const bytes=await fetchBytes(f);
-    saveBlob(new Blob([bytes],{type:mimeOf(f)}),f.name);
-  }catch(e){
-    cloudErr(e);
-  }
+  const f=findFile(id);if(!f){return;}
+  try{showProgress("Downloading "+f.name,30);saveBlob(new Blob([await fetchBytes(f)],{type:mimeOf(f)}),f.name);}
+  catch(e){cloudErr(e);}
   hideProgress();
 }
-
 async function openFile(id){
-  const f=findFile(id);
-  if(!f){return;}
+  const f=findFile(id);if(!f){return;}
   const w=window.open("about:blank","_blank");
   try{
     showProgress("Opening "+f.name,30);
-    const bytes=await fetchBytes(f);
-    const url=URL.createObjectURL(new Blob([bytes],{type:mimeOf(f)}));
-    if(w){w.location=url;}else{saveBlob(new Blob([bytes],{type:mimeOf(f)}),f.name);}
-  }catch(e){
-    if(w){w.close();}
-    cloudErr(e);
-  }
+    const blob=new Blob([await fetchBytes(f)],{type:mimeOf(f)});
+    if(w){w.location=URL.createObjectURL(blob);}else{saveBlob(blob,f.name);}
+  }catch(e){if(w){w.close();}cloudErr(e);}
   hideProgress();
 }
-
 async function deleteFile(id){
-  const f=S.files.find(x=>x.id===id);
-  if(!f){return;}
-  const ok=await askConfirm("DELETE DOCUMENT","Delete "+f.name+" from all your devices? This cannot be undone.","DELETE");
-  if(!ok){return;}
-  await destroyFile(f);
-  toast("Document deleted.");
+  const f=findFile(id);if(!f){return;}
+  if(!(await askConfirm("DELETE DOCUMENT","Delete "+f.name+"? This cannot be undone.","DELETE"))){return;}
+  await destroyFile(f);toast("Document deleted.");
 }
-
 async function destroyFile(f){
   const c=F();
   try{
     await c.deleteDoc(c.doc(c.db,"dd_files",f.id));
-    for(let i=0;i<f.chunks;i++){
-      await c.deleteDoc(c.doc(c.db,"dd_chunks",f.id+"_"+i));
-    }
+    await Promise.all(Array.from({length:f.chunks||0},(_,i)=>c.deleteDoc(c.doc(c.db,"dd_chunks",f.id+"_"+i))));
+    const sh=await c.getDocs(c.query(c.collection(c.db,"dd_shares"),c.where("fileId","==",f.id)));
+    await Promise.all(sh.docs.map(d=>c.deleteDoc(d.ref)));
   }catch(e){cloudErr(e);}
 }
 
-/* ---------- ZIP (PDF bundles) ---------- */
-
-const CRC_T=(function(){
-  const t=new Uint32Array(256);
-  for(let n=0;n<256;n++){
-    let c=n;
-    for(let k=0;k<8;k++){c=c&1?0xEDB88320^(c>>>1):c>>>1;}
-    t[n]=c>>>0;
-  }
-  return t;
-})();
-
-function crc32(b){
-  let c=0xFFFFFFFF;
-  for(let i=0;i<b.length;i++){c=CRC_T[(c^b[i])&255]^(c>>>8);}
-  return (c^0xFFFFFFFF)>>>0;
-}
-
+/* ZIP (PDF bundles) */
+const CRC_T=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++){c=c&1?0xEDB88320^(c>>>1):c>>>1;}t[n]=c>>>0;}return t;})();
+function crc32(b){let c=0xFFFFFFFF;for(let i=0;i<b.length;i++){c=CRC_T[(c^b[i])&255]^(c>>>8);}return (c^0xFFFFFFFF)>>>0;}
 function makeZip(entries){
-  const enc=new TextEncoder();
-  const locals=[],centrals=[];
-  let off=0;
-  const d=new Date();
-  const dt=((d.getHours()<<11)|(d.getMinutes()<<5)|(d.getSeconds()>>1))&0xFFFF;
-  const dd=(((d.getFullYear()-1980)<<9)|((d.getMonth()+1)<<5)|d.getDate())&0xFFFF;
+  const enc=new TextEncoder(),locals=[],centrals=[];let off=0;
+  const d=new Date(),dt=((d.getHours()<<11)|(d.getMinutes()<<5)|(d.getSeconds()>>1))&0xFFFF,dd=(((d.getFullYear()-1980)<<9)|((d.getMonth()+1)<<5)|d.getDate())&0xFFFF;
   entries.forEach(e=>{
-    const name=enc.encode(e.name);
-    const crc=crc32(e.data);
-    const size=e.data.length;
+    const name=enc.encode(e.name),crc=crc32(e.data),size=e.data.length;
     const lh=new DataView(new ArrayBuffer(30));
-    lh.setUint32(0,0x04034b50,true);lh.setUint16(4,20,true);lh.setUint16(6,0x0800,true);lh.setUint16(8,0,true);
-    lh.setUint16(10,dt,true);lh.setUint16(12,dd,true);lh.setUint32(14,crc,true);lh.setUint32(18,size,true);
-    lh.setUint32(22,size,true);lh.setUint16(26,name.length,true);lh.setUint16(28,0,true);
+    lh.setUint32(0,0x04034b50,true);lh.setUint16(4,20,true);lh.setUint16(6,0x0800,true);lh.setUint16(10,dt,true);lh.setUint16(12,dd,true);
+    lh.setUint32(14,crc,true);lh.setUint32(18,size,true);lh.setUint32(22,size,true);lh.setUint16(26,name.length,true);
     locals.push(new Uint8Array(lh.buffer),name,e.data);
     const ch=new DataView(new ArrayBuffer(46));
-    ch.setUint32(0,0x02014b50,true);ch.setUint16(4,20,true);ch.setUint16(6,20,true);ch.setUint16(8,0x0800,true);
-    ch.setUint16(10,0,true);ch.setUint16(12,dt,true);ch.setUint16(14,dd,true);ch.setUint32(16,crc,true);
-    ch.setUint32(20,size,true);ch.setUint32(24,size,true);ch.setUint16(28,name.length,true);
-    ch.setUint16(30,0,true);ch.setUint16(32,0,true);ch.setUint16(34,0,true);ch.setUint16(36,0,true);
-    ch.setUint32(38,0,true);ch.setUint32(42,off,true);
+    ch.setUint32(0,0x02014b50,true);ch.setUint16(4,20,true);ch.setUint16(6,20,true);ch.setUint16(8,0x0800,true);ch.setUint16(12,dt,true);ch.setUint16(14,dd,true);
+    ch.setUint32(16,crc,true);ch.setUint32(20,size,true);ch.setUint32(24,size,true);ch.setUint16(28,name.length,true);ch.setUint32(42,off,true);
     centrals.push(new Uint8Array(ch.buffer),name);
     off+=30+name.length+size;
   });
-  let cd=0;
-  centrals.forEach(p=>{cd+=p.length;});
+  let cd=0;centrals.forEach(p=>{cd+=p.length;});
   const end=new DataView(new ArrayBuffer(22));
-  end.setUint32(0,0x06054b50,true);end.setUint16(4,0,true);end.setUint16(6,0,true);
-  end.setUint16(8,entries.length,true);end.setUint16(10,entries.length,true);
-  end.setUint32(12,cd,true);end.setUint32(16,off,true);end.setUint16(20,0,true);
+  end.setUint32(0,0x06054b50,true);end.setUint16(8,entries.length,true);end.setUint16(10,entries.length,true);end.setUint32(12,cd,true);end.setUint32(16,off,true);
   return new Blob(locals.concat(centrals,[new Uint8Array(end.buffer)]),{type:"application/zip"});
 }
-
 async function downloadAllPdf(list,zipName){
   const pdfs=(list||[]).filter(isPdf);
   if(!pdfs.length){toast("There are no PDF documents to download.");return;}
   try{
-    if(pdfs.length===1){
-      showProgress("Downloading "+pdfs[0].name,30);
-      const bytes=await fetchBytes(pdfs[0]);
-      saveBlob(new Blob([bytes],{type:"application/pdf"}),pdfs[0].name);
-      hideProgress();
-      return;
-    }
-    const entries=[];
-    const used={};
+    if(pdfs.length===1){showProgress("Downloading "+pdfs[0].name,30);saveBlob(new Blob([await fetchBytes(pdfs[0])],{type:"application/pdf"}),pdfs[0].name);hideProgress();return;}
+    const entries=[],used={};
     for(let i=0;i<pdfs.length;i++){
       showProgress("Preparing PDF "+(i+1)+" of "+pdfs.length,(i/pdfs.length)*100);
-      const bytes=await fetchBytes(pdfs[i]);
+      const data=await fetchBytes(pdfs[i]);
       let name=pdfs[i].name;
-      if(used[name]){
-        const n=++used[name];
-        name=name.replace(/(\.[^.]*)?$/,m=>" ("+n+")"+(m||""));
-      }else{
-        used[name]=1;
-      }
-      entries.push({name,data:bytes});
+      if(used[name]){const n=++used[name];name=name.replace(/(\.[^.]*)?$/,m=>" ("+n+")"+(m||""));}else{used[name]=1;}
+      entries.push({name,data});
     }
     saveBlob(makeZip(entries),zipName);
     toast("Downloaded "+pdfs.length+" PDFs.");
-  }catch(e){
-    cloudErr(e);
-  }
+  }catch(e){cloudErr(e);}
   hideProgress();
 }
 
-/* ---------- OTP SHARING ---------- */
-
-function genOtpCode(){
-  return Math.floor(100000 + Math.random() * 900000).toString();
-}
-
+/* OTP sharing */
 async function generateShareOtp(fileId){
   const c=F();
   if(!c){toast("Cloud unavailable.");return null;}
   try{
     for(let i=0;i<10;i++){
-      const code=genOtpCode();
-      const ref=c.doc(c.db,"dd_shares",code);
+      const code=String(100000+rnd(900000)),ref=c.doc(c.db,"dd_shares",code);
       if((await c.getDoc(ref)).exists()){continue;}
       await c.setDoc(ref,{code,fileId,owner:S.user.id,created:Date.now()});
       return code;
     }
     toast("Could not create a code. Try again.");
-    return null;
-  }catch(e){
-    cloudErr(e);
-    return null;
-  }
+  }catch(e){cloudErr(e);}
+  return null;
 }
-
 async function generateShareOtpFromPage(){
   const fid=$("sendDoc").value;
   if(!fid){toast("Select a document first.");return;}
   const code=await generateShareOtp(fid);
-  if(code){
-    await askConfirm("SHARE CODE GENERATED","Your 6-digit Share OTP is: "+code+"\n\nGive this code to anyone so they can redeem and import this document.","OK");
-  }
+  if(code){await askConfirm("SHARE CODE GENERATED","Your 6-digit Share OTP is: "+code+"\n\nGive this code to someone so they can redeem and import this document.","OK");}
 }
-
 let shareTargetId=null;
 function openShareModal(id){
-  const f=S.files.find(x=>x.id===id);
-  if(!f){return;}
-  shareTargetId=id;
-  $("shareName").textContent=f.name;
-  $("shareOtpResult").classList.add("hidden");
-  $("genOtpBtn").classList.remove("hidden");
+  const f=S.files.find(x=>x.id===id);if(!f){return;}
+  shareTargetId=id;$("shareName").textContent=f.name;
+  $("shareOtpResult").classList.add("hidden");$("genOtpBtn").classList.remove("hidden");
   openModal("shareModal");
 }
-
 async function generateShareOtpFromModal(){
   if(!shareTargetId){return;}
   const code=await generateShareOtp(shareTargetId);
-  if(code){
-    const resEl=$("shareOtpResult");
-    resEl.textContent="OTP CODE: "+code;
-    resEl.classList.remove("hidden");
-    $("genOtpBtn").classList.add("hidden");
-    toast("Share code generated!");
-  }
+  if(code){$("shareOtpResult").textContent="OTP CODE: "+code;$("shareOtpResult").classList.remove("hidden");$("genOtpBtn").classList.add("hidden");}
 }
-
 async function redeemShareOtp(){
   const code=($("redeemOtpInput").value||"").trim();
   if(!/^\d{6}$/.test(code)){toast("Enter a valid 6-digit OTP code.");return;}
-  const c=F();
-  if(!c){toast("Cloud unavailable.");return;}
-
+  const c=F();if(!c){toast("Cloud unavailable.");return;}
   try{
-    const ref=c.doc(c.db,"dd_shares",code);
-    const snap=await c.getDoc(ref);
+    const snap=await c.getDoc(c.doc(c.db,"dd_shares",code));
     if(!snap.exists()){toast("Invalid or revoked share code.");return;}
     const data=snap.data();
     if(data.owner===S.user.id){toast("You cannot redeem your own shared document.");return;}
-
     const fileRef=c.doc(c.db,"dd_files",data.fileId);
-    const fSnap=await c.getDoc(fileRef);
-    if(!fSnap.exists()){toast("The original document no longer exists.");return;}
-
+    if(!(await c.getDoc(fileRef)).exists()){toast("The original document no longer exists.");return;}
     await c.updateDoc(fileRef,{sharedWith:c.arrayUnion(S.user.id)});
     $("redeemOtpInput").value="";
-    toast("Document successfully imported!");
-  }catch(e){
-    cloudErr(e);
-  }
+    toast("Document imported!");
+  }catch(e){cloudErr(e);}
 }
-
 async function revokeShareOtp(code){
   const c=F();
-  try{
-    await c.deleteDoc(c.doc(c.db,"dd_shares",code));
-    toast("Share code revoked.");
-  }catch(e){cloudErr(e);}
+  try{await c.deleteDoc(c.doc(c.db,"dd_shares",code));toast("Share code revoked.");}catch(e){cloudErr(e);}
 }
-
 async function removeShared(fid){
-  const f=S.sharedIn.find(x=>x.id===fid);
-  if(!f){return;}
+  const f=S.sharedIn.find(x=>x.id===fid);if(!f){return;}
   if(!(await askConfirm("REMOVE","Remove "+f.name+" from your shared list?","REMOVE"))){return;}
   const c=F();
-  try{
-    await c.updateDoc(c.doc(c.db,"dd_files",fid),{sharedWith:c.arrayRemove(S.user.id)});
-    toast("Removed.");
-  }catch(e){cloudErr(e);}
+  try{await c.updateDoc(c.doc(c.db,"dd_files",fid),{sharedWith:c.arrayRemove(S.user.id)});toast("Removed.");}catch(e){cloudErr(e);}
 }
 
-/* ---------- groups ---------- */
-
+/* groups */
 const CODE_CHARS="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-function genCode(){
-  let s="";
-  for(let i=0;i<6;i++){s+=CODE_CHARS[Math.floor(Math.random()*CODE_CHARS.length)];}
-  return s;
-}
-function isAdmin(g){return (g.admins||[]).includes(S.user.id);}
+const genCode=()=>Array.from({length:6},()=>CODE_CHARS[rnd(CODE_CHARS.length)]).join("");
+const isAdmin=g=>(g.admins||[]).includes(S.user.id);
 
 async function createGroup(){
   if(S.groups.length>=MAX_GROUPS){toast("You can be in up to "+MAX_GROUPS+" groups.");return;}
   const name=await askPrompt("NEW GROUP","Name your group","","Group name");
   if(name===null){return;}
-  const nm2=name.trim().slice(0,30);
-  if(!nm2){toast("Group name is required.");return;}
+  const nm=name.trim().slice(0,30);
+  if(!nm){toast("Group name is required.");return;}
   const c=F();
   try{
     let code="";
     for(let t=0;t<8;t++){
       const cand=genCode();
-      const q=await c.getDocs(c.query(c.collection(c.db,"dd_groups"),c.where("code","==",cand)));
-      if(q.empty){code=cand;break;}
+      if((await c.getDocs(c.query(c.collection(c.db,"dd_groups"),c.where("code","==",cand)))).empty){code=cand;break;}
     }
     if(!code){toast("Could not create a room code. Try again.");return;}
     const id=uid();
-    await c.setDoc(c.doc(c.db,"dd_groups",id),{
-      id,name:nm2,code,owner:S.user.id,admins:[S.user.id],members:[S.user.id],created:Date.now()
-    });
+    await c.setDoc(c.doc(c.db,"dd_groups",id),{id,name:nm,code,owner:S.user.id,admins:[S.user.id],members:[S.user.id],created:Date.now()});
     toast("Group created. Room code: "+code);
   }catch(e){cloudErr(e);}
 }
-
 async function joinGroup(){
   const v=await askPrompt("JOIN GROUP","Enter the room code. An admin must approve your request.","","ROOM CODE");
   if(v===null){return;}
@@ -1426,416 +830,214 @@ async function joinGroup(){
     const g=q.docs[0].data();
     if((g.members||[]).includes(S.user.id)){toast("You are already in that group.");return;}
     if((g.members||[]).length>=MAX_MEMBERS){toast("That group is full.");return;}
-    await c.setDoc(c.doc(c.db,"dd_requests",g.id+"_"+S.user.id),{
-      id:g.id+"_"+S.user.id,gid:g.id,gname:g.name,uid:S.user.id,
-      name:S.user.name,username:S.user.username,time:Date.now()
-    });
+    await c.setDoc(c.doc(c.db,"dd_requests",g.id+"_"+S.user.id),{id:g.id+"_"+S.user.id,gid:g.id,gname:g.name,uid:S.user.id,name:S.user.name,username:S.user.username,time:Date.now()});
     toast("Request sent. Waiting for admin approval.");
   }catch(e){cloudErr(e);}
 }
-
-async function cancelRequest(id){
-  const c=F();
-  try{await c.deleteDoc(c.doc(c.db,"dd_requests",id));toast("Request cancelled.");}catch(e){cloudErr(e);}
-}
-
+async function cancelRequest(id){const c=F();try{await c.deleteDoc(c.doc(c.db,"dd_requests",id));toast("Request cancelled.");}catch(e){cloudErr(e);}}
 async function approveRequest(gid,who){
-  const g=S.groups.find(x=>x.id===gid);
-  if(!g||!isAdmin(g)){return;}
+  const g=S.groups.find(x=>x.id===gid);if(!g||!isAdmin(g)){return;}
+  if((g.members||[]).length>=MAX_MEMBERS){toast("That group is full.");return;}
   const c=F();
-  try{
-    await c.updateDoc(c.doc(c.db,"dd_groups",gid),{members:c.arrayUnion(who)});
-    await c.deleteDoc(c.doc(c.db,"dd_requests",gid+"_"+who));
-    toast("Member approved.");
-  }catch(e){cloudErr(e);}
+  try{await c.updateDoc(c.doc(c.db,"dd_groups",gid),{members:c.arrayUnion(who)});await c.deleteDoc(c.doc(c.db,"dd_requests",gid+"_"+who));toast("Member approved.");}catch(e){cloudErr(e);}
 }
-
 async function declineRequest(gid,who){
-  const g=S.groups.find(x=>x.id===gid);
-  if(!g||!isAdmin(g)){return;}
+  const g=S.groups.find(x=>x.id===gid);if(!g||!isAdmin(g)){return;}
   const c=F();
-  try{
-    await c.deleteDoc(c.doc(c.db,"dd_requests",gid+"_"+who));
-    toast("Request declined.");
-  }catch(e){cloudErr(e);}
+  try{await c.deleteDoc(c.doc(c.db,"dd_requests",gid+"_"+who));toast("Request declined.");}catch(e){cloudErr(e);}
 }
-
-function openGroupView(gid){
-  S.openGroup=gid;
-  renderGroups();
-  window.scrollTo({top:0});
-}
-
-function closeGroupView(){
-  S.openGroup=null;
-  renderGroups();
-}
+function openGroupView(gid){S.openGroup=gid;renderGroups();window.scrollTo({top:0});}
+function closeGroupView(){S.openGroup=null;renderGroups();}
 
 async function leaveGroup(gid){
-  const g=S.groups.find(x=>x.id===gid);
-  if(!g){return;}
-  const c=F();
-  const me=S.user.id;
-  const only=(g.members||[]).length===1;
-  const ok=await askConfirm(only?"DELETE GROUP":"LEAVE GROUP",only?"Delete "+g.name+"?":"Leave "+g.name+"?",only?"DELETE":"LEAVE");
-  if(!ok){return;}
+  const g=S.groups.find(x=>x.id===gid);if(!g){return;}
+  const c=F(),me=S.user.id,only=(g.members||[]).length===1;
+  if(!(await askConfirm(only?"DELETE GROUP":"LEAVE GROUP",only?"Delete "+g.name+" and all its group documents?":"Leave "+g.name+"?",only?"DELETE":"LEAVE"))){return;}
   try{
-    if(only){
-      S.openGroup=null;
-      await c.deleteDoc(c.doc(c.db,"dd_groups",gid));
-      toast("Group deleted.");
-      return;
-    }
     S.openGroup=null;
+    if(only){
+      const fs=await c.getDocs(c.query(c.collection(c.db,"dd_files"),c.where("groups","array-contains",gid)));
+      for(const d of fs.docs){
+        const f=d.data();
+        if(f.personal===false&&(f.groups||[]).length<=1){await destroyFile(f);}
+        else{await c.updateDoc(d.ref,{groups:c.arrayRemove(gid)});}
+      }
+      const rs=await c.getDocs(c.query(c.collection(c.db,"dd_requests"),c.where("gid","==",gid)));
+      await Promise.all(rs.docs.map(d=>c.deleteDoc(d.ref)));
+      await c.deleteDoc(c.doc(c.db,"dd_groups",gid));
+      toast("Group deleted.");return;
+    }
     await c.updateDoc(c.doc(c.db,"dd_groups",gid),{members:c.arrayRemove(me),admins:c.arrayRemove(me)});
     toast("You left the group.");
   }catch(e){cloudErr(e);}
 }
 
-/* ---------- devices ---------- */
-
+/* devices */
 async function renameDevice(id){
-  const d=(S.user.devices||{})[id];
-  if(!d){return;}
+  const d=(S.user.devices||{})[id];if(!d){return;}
   const v=await askPrompt("RENAME DEVICE","Device name",d.name,"Device name");
   if(v===null){return;}
-  const n=v.trim().slice(0,24);
-  if(!n){return;}
+  const n=v.trim().slice(0,24);if(!n){return;}
   const c=F();
-  try{
-    await c.updateDoc(c.doc(c.db,"dd_users",S.user.id),{["devices."+id+".name"]:n});
-  }catch(e){cloudErr(e);}
+  try{await c.updateDoc(c.doc(c.db,"dd_users",S.user.id),{["devices."+id+".name"]:n});}catch(e){cloudErr(e);}
 }
-
 async function setDeviceType(t){
-  selectedDevice=t;
-  localStorage.setItem("DD_DEVICE_TYPE",t);
+  selectedDevice=t;localStorage.setItem("DD_DEVICE_TYPE",t);
   const c=F();
-  try{
-    await c.updateDoc(c.doc(c.db,"dd_users",S.user.id),{["devices."+S.deviceId+".type"]:t});
-    toast("Device preference saved.");
-  }catch(e){cloudErr(e);}
+  try{await c.updateDoc(c.doc(c.db,"dd_users",S.user.id),{["devices."+S.deviceId+".type"]:t});toast("Device preference saved.");}catch(e){cloudErr(e);}
 }
-
 async function removeDevice(id){
   if(id===S.deviceId){toast("Use Logout to sign out of this device.");return;}
-  const d=(S.user.devices||{})[id];
-  if(!d){return;}
+  const d=(S.user.devices||{})[id];if(!d){return;}
   if(!(await askConfirm("REMOVE DEVICE","Sign "+d.name+" out of your account?","REMOVE"))){return;}
   const c=F();
-  try{
-    const next=Object.assign({},S.user.devices);
-    delete next[id];
-    await c.updateDoc(c.doc(c.db,"dd_users",S.user.id),{devices:next});
-    toast("Device removed.");
-  }catch(e){cloudErr(e);}
+  try{const next={...S.user.devices};delete next[id];await c.updateDoc(c.doc(c.db,"dd_users",S.user.id),{devices:next});toast("Device removed.");}catch(e){cloudErr(e);}
 }
-
 async function removeOtherDevices(){
-  const others=Object.keys(S.user.devices||{}).filter(k=>k!==S.deviceId);
-  if(!others.length){toast("There are no other devices.");return;}
+  if(!Object.keys(S.user.devices||{}).some(k=>k!==S.deviceId)){toast("There are no other devices.");return;}
   if(!(await askConfirm("REMOVE ALL OTHERS","Sign out all other devices?","REMOVE"))){return;}
   const c=F();
-  try{
-    const keep={};
-    keep[S.deviceId]=S.user.devices[S.deviceId];
-    await c.updateDoc(c.doc(c.db,"dd_users",S.user.id),{devices:keep});
-    toast("Other devices removed.");
-  }catch(e){cloudErr(e);}
+  try{await c.updateDoc(c.doc(c.db,"dd_users",S.user.id),{devices:{[S.deviceId]:S.user.devices[S.deviceId]}});toast("Other devices removed.");}catch(e){cloudErr(e);}
 }
-
-/* ---------- render ---------- */
-
-function vaultDocs(){
-  return S.files.filter(f=>f.personal!==false).sort((a,b)=>b.created-a.created);
-}
-
-function fileRow(f,ctx,gid){
-  const meta=fmtSize(f.size)+" • "+(ctx==="vault"?"from "+esc(f.deviceLabel||"device"):timeAgo(f.created));
-  const fresh=ctx==="vault"&&f.device!==S.deviceId&&Date.now()-f.created<300000;
-
-  let acts=previewable(f)?`<button class="btn small" onclick="openFile('${f.id}')">OPEN</button>`:"";
-  acts+=`<button class="btn small" onclick="downloadFile('${f.id}')">DOWNLOAD</button>`;
-
-  if(ctx==="vault"){
-    acts+=`<button class="btn small" onclick="openShareModal('${f.id}')">SHARE OTP</button>`;
-    acts+=`<button class="btn small" onclick="deleteFile('${f.id}')">DELETE</button>`;
-  }else if(ctx==="in"){
-    acts+=`<button class="btn small" onclick="removeShared('${f.id}')">REMOVE</button>`;
-  }
-
-  return `
-    <div class="item">
-      <div class="left">
-        <div class="ext ${isPdf(f)?"pdf":""}">${esc(extOf(f.name))}</div>
-        <div>
-          <b>${esc(f.name)}</b>${fresh?' <span class="badge black">NEW</span>':""}
-          <small>${meta}</small>
-        </div>
-      </div>
-      <div class="row">${acts}</div>
-    </div>
-  `;
-}
-
-function renderVault(){
-  const docs=vaultDocs();
-  const q=(S.query||"").trim().toLowerCase();
-  const shown=q?docs.filter(f=>f.name.toLowerCase().includes(q)):docs;
-
-  $("statDocs").textContent=docs.length;
-  $("statSize").textContent=fmtSize(docs.reduce((a,f)=>a+(f.size||0),0));
-  $("statDevices").textContent=Object.keys(S.user.devices||{}).length;
-  $("statGroups").textContent=S.groups.length;
-
-  $("vaultList").innerHTML=shown.map(f=>fileRow(f,"vault")).join("")||
-    `<div class="notice">${docs.length?"No documents match your search.":"Your vault is empty. Upload a document."}</div>`;
-}
-
-function renderShare(){
-  const docs=vaultDocs();
-  const cur=$("sendDoc").value;
-
-  $("sendDoc").innerHTML=docs.length
-    ?docs.map(f=>`<option value="${f.id}">${esc(f.name)}</option>`).join("")
-    :`<option value="">No documents yet</option>`;
-
-  if(cur&&docs.find(f=>f.id===cur)){$("sendDoc").value=cur;}
-
-  $("inList").innerHTML=S.sharedIn.slice().sort((a,b)=>b.created-a.created).map(f=>fileRow(f,"in")).join("")||
-    `<div class="notice">Nothing has been shared with you yet. Use a Share OTP above to redeem.</div>`;
-
-  $("outList").innerHTML=S.myShares.map(s=>{
-    const f=S.files.find(x=>x.id===s.fileId);
-    return `
-      <div class="item">
-        <div class="left">
-          <div><b>OTP: ${esc(s.code)}</b><small>Document: ${esc(f?f.name:"Unknown file")}</small></div>
-        </div>
-        <div class="row">
-          <button class="btn small" onclick="revokeShareOtp('${esc(s.code)}')">REVOKE</button>
-        </div>
-      </div>
-    `;
-  }).join("")||`<div class="notice">No active share codes generated.</div>`;
-}
-
-function renderGroups(){
-  const home=$("groupsHome");
-  const det=$("groupDetail");
-
-  const reqTotal=Object.keys(S.requests).reduce((a,k)=>a+S.requests[k].length,0);
-  $("groupBadge").textContent=reqTotal?"("+reqTotal+")":"";
-
-  const g=S.openGroup?S.groups.find(x=>x.id===S.openGroup):null;
-
-  if(!g){
-    det.classList.add("hidden");
-    home.classList.remove("hidden");
-    home.innerHTML=`
-      <div class="section-card">
-        <div class="section-head"><h2>GROUPS</h2></div>
-        <div class="row">
-          <button class="btn black" onclick="createGroup()">CREATE GROUP</button>
-          <button class="btn" onclick="joinGroup()">JOIN WITH ROOM CODE</button>
-        </div>
-      </div>
-
-      ${S.myRequests.length?`
-        <div class="section-card">
-          <div class="section-head"><h2>PENDING REQUESTS</h2></div>
-          <div class="list">
-            ${S.myRequests.map(r=>`
-              <div class="item">
-                <div class="left"><div><b>${esc(r.gname)}</b><small>Waiting for approval • ${timeAgo(r.time)}</small></div></div>
-                <button class="btn small" onclick="cancelRequest('${esc(r.id)}')">CANCEL</button>
-              </div>
-            `).join("")}
-          </div>
-        </div>`:""}
-
-      <div class="section-card">
-        <div class="section-head"><h2>MY GROUPS</h2></div>
-        <div class="list">
-          ${S.groups.map(x=>`
-            <div class="item">
-              <div class="left"><div><b>${esc(x.name)}</b><small>${(x.members||[]).length} members${isAdmin(x)&&(S.requests[x.id]||[]).length?" • "+S.requests[x.id].length+" REQUEST(S)":""}</small></div></div>
-              <button class="btn small" onclick="openGroupView('${x.id}')">OPEN</button>
-            </div>
-          `).join("")||`<div class="notice">No groups yet.</div>`}
-        </div>
-      </div>
-    `;
-    return;
-  }
-
-  home.classList.add("hidden");
-  det.classList.remove("hidden");
-  const files=(S.groupFiles[g.id]||[]).slice().sort((a,b)=>b.created-a.created);
-  const reqs=isAdmin(g)?(S.requests[g.id]||[]):[];
-
-  det.innerHTML=`
-    <div class="row" style="margin-bottom:12px">
-      <button class="btn small" onclick="closeGroupView()">← ALL GROUPS</button>
-    </div>
-    <div class="hero-main">
-      <h1>${esc(g.name)}</h1>
-      <span class="badge black">ROOM CODE ${esc(g.code)}</span>
-      <div class="row" style="margin-top:14px">
-        <button class="btn small" onclick="leaveGroup('${g.id}')">LEAVE GROUP</button>
-      </div>
-    </div>
-
-    ${reqs.length?`
-      <div class="section-card">
-        <div class="section-head"><h2>JOIN REQUESTS (${reqs.length})</h2></div>
-        <div class="list">
-          ${reqs.map(r=>`
-            <div class="item">
-              <div class="left"><div><b>${esc(r.name)}</b><small>@${esc(r.username)} • ${timeAgo(r.time)}</small></div></div>
-              <div class="row">
-                <button class="btn small" onclick="approveRequest('${g.id}','${esc(r.uid)}')">APPROVE</button>
-                <button class="btn small" onclick="declineRequest('${g.id}','${esc(r.uid)}')">DECLINE</button>
-              </div>
-            </div>
-          `).join("")}
-        </div>
-      </div>`:""}
-
-    <div class="section-card">
-      <div class="section-head"><h2>GROUP DOCUMENTS</h2></div>
-      <div class="dz" id="groupDz" data-dz="group">
-        DROP DOCUMENTS FOR THE GROUP
-        <div class="row"><button class="btn black" onclick="$('fileGroup').click()">UPLOAD TO GROUP</button></div>
-      </div>
-      <div class="list" style="margin-top:12px">
-        ${files.map(f=>fileRow(f,"group",g.id)).join("")||`<div class="notice">No documents in this group.</div>`}
-      </div>
-    </div>
-  `;
-}
-
-function renderAccount(){
-  $("accName").textContent=S.user.name;
-  $("accUser").textContent="@"+S.user.username;
-
-  const types=["iOS","Android","PC","Tablet"];
-  $("devicePrefs").innerHTML=types.map(t=>`
-    <button class="btn ${selectedDevice===t?"black":""}" onclick="setDeviceType('${t}')">${t}</button>
-  `).join("");
-
-  const devs=S.user.devices||{};
-  $("deviceList").innerHTML=Object.keys(devs).sort((a,b)=>(devs[b].seen||0)-(devs[a].seen||0)).map(id=>{
-    const d=devs[id];
-    const me=id===S.deviceId;
-    return `
-      <div class="item">
-        <div class="left">
-          <div class="ext">${esc(String(d.type||"?").slice(0,4).toUpperCase())}</div>
-          <div><b>${esc(d.name)}${me?' <span class="badge black">THIS</span>':""}</b><small>${timeAgo(d.seen)}</small></div>
-        </div>
-        <div class="row">
-          <button class="btn small" onclick="renameDevice('${id}')">RENAME</button>
-          ${me?"":`<button class="btn small" onclick="removeDevice('${id}')">REMOVE</button>`}
-        </div>
-      </div>
-    `;
-  }).join("");
-}
-
-function renderRmDevices(){
-  const sel=$("rmDevice"),cur=sel.value;
-  const devs=S.user.devices||{};
-  const ids=Object.keys(devs).filter(id=>id!==S.deviceId);
-  sel.innerHTML=ids.length
-    ?ids.map(id=>`<option value="${esc(id)}">${esc(devs[id].name)} (${esc(devs[id].type||"?")})</option>`).join("")+`<option value="__all__">All other devices</option>`
-    :`<option value="">No other devices</option>`;
-  if(cur&&Array.from(sel.options).some(o=>o.value===cur)){sel.value=cur;}
-}
-
 async function removeDeviceWithCode(){
   const id=$("rmDevice").value,code=$("rmCode").value.trim();
   if(!id){toast("There is no other device to remove.");return;}
   if(!/^\d{6}$/.test(code)){toast("Enter your 6-digit access code.");return;}
   if(Date.now()<lockUntil){toast("Too many attempts. Try again in "+Math.ceil((lockUntil-Date.now())/1000)+"s.");return;}
   if((await hashCode(code))!==S.user.codeHash){
-    $("rmCode").value="";
-    fails++;
-    if(fails>=5){fails=0;lockUntil=Date.now()+60000;toast("Too many wrong codes. Locked for 60 seconds.");}
-    else{toast("Incorrect access code.");}
+    $("rmCode").value="";fails++;
+    if(fails>=5){fails=0;lockUntil=Date.now()+60000;toast("Too many wrong codes. Locked for 60 seconds.");}else{toast("Incorrect access code.");}
     return;
   }
   fails=0;
   const c=F();
   try{
-    const next=Object.assign({},S.user.devices);
-    if(id==="__all__"){Object.keys(next).forEach(k=>{if(k!==S.deviceId){delete next[k];}});}
-    else{delete next[id];}
+    const next={...S.user.devices};
+    if(id==="__all__"){Object.keys(next).forEach(k=>{if(k!==S.deviceId){delete next[k];}});}else{delete next[id];}
     await c.updateDoc(c.doc(c.db,"dd_users",S.user.id),{devices:next});
-    $("rmCode").value="";
-    toast(id==="__all__"?"Other devices removed.":"Device removed.");
+    $("rmCode").value="";toast(id==="__all__"?"Other devices removed.":"Device removed.");
   }catch(e){cloudErr(e);}
+}
+
+/* render */
+const vaultDocs=()=>S.files.filter(f=>f.personal!==false).sort((a,b)=>b.created-a.created);
+
+function fileRow(f,ctx,gid){
+  const meta=fmtSize(f.size)+" • "+(ctx==="vault"?"from "+esc(f.deviceLabel||"device"):timeAgo(f.created));
+  const fresh=ctx==="vault"&&f.device!==S.deviceId&&Date.now()-f.created<300000;
+  let a=previewable(f)?`<button class="btn small" onclick="openFile('${esc(f.id)}')">OPEN</button>`:"";
+  a+=`<button class="btn small" onclick="downloadFile('${esc(f.id)}')">DOWNLOAD</button>`;
+  if(ctx==="vault"){a+=`<button class="btn small" onclick="openShareModal('${esc(f.id)}')">SHARE OTP</button><button class="btn small" onclick="deleteFile('${esc(f.id)}')">DELETE</button>`;}
+  else if(ctx==="in"){a+=`<button class="btn small" onclick="removeShared('${esc(f.id)}')">REMOVE</button>`;}
+  else if(ctx==="group"){
+    const g=S.groups.find(x=>x.id===gid);
+    if(f.owner===S.user.id||(g&&isAdmin(g))){a+=`<button class="btn small" onclick="deleteFile('${esc(f.id)}')">DELETE</button>`;}
+  }
+  return `<div class="item"><div class="left"><div class="ext ${isPdf(f)?"pdf":""}">${esc(extOf(f.name))}</div><div><b>${esc(f.name)}</b>${fresh?' <span class="badge black">NEW</span>':""}<small>${meta}</small></div></div><div class="row">${a}</div></div>`;
+}
+
+function renderVault(){
+  const docs=vaultDocs(),q=(S.query||"").trim().toLowerCase();
+  const shown=q?docs.filter(f=>f.name.toLowerCase().includes(q)):docs;
+  $("statDocs").textContent=docs.length;
+  $("statSize").textContent=fmtSize(docs.reduce((a,f)=>a+(f.size||0),0));
+  $("statDevices").textContent=Object.keys(S.user.devices||{}).length;
+  $("statGroups").textContent=S.groups.length;
+  $("vaultList").innerHTML=shown.map(f=>fileRow(f,"vault")).join("")||`<div class="notice">${docs.length?"No documents match your search.":"Your vault is empty. Upload a document."}</div>`;
+}
+
+function renderShare(){
+  const docs=vaultDocs(),cur=$("sendDoc").value;
+  $("sendDoc").innerHTML=docs.length?docs.map(f=>`<option value="${esc(f.id)}">${esc(f.name)}</option>`).join(""):`<option value="">No documents yet</option>`;
+  if(cur&&docs.find(f=>f.id===cur)){$("sendDoc").value=cur;}
+  $("inList").innerHTML=S.sharedIn.slice().sort((a,b)=>b.created-a.created).map(f=>fileRow(f,"in")).join("")||`<div class="notice">Nothing has been shared with you yet. Redeem a Share OTP above.</div>`;
+  $("outList").innerHTML=S.myShares.map(s=>{
+    const f=S.files.find(x=>x.id===s.fileId);
+    return `<div class="item"><div class="left"><div><b>OTP: ${esc(s.code)}</b><small>Document: ${esc(f?f.name:"Unknown file")}</small></div></div><div class="row"><button class="btn small" onclick="revokeShareOtp('${esc(s.code)}')">REVOKE</button></div></div>`;
+  }).join("")||`<div class="notice">No active share codes.</div>`;
+}
+
+function renderGroups(){
+  const home=$("groupsHome"),det=$("groupDetail");
+  const reqTotal=Object.keys(S.requests).reduce((a,k)=>a+S.requests[k].length,0);
+  $("groupBadge").textContent=reqTotal?"("+reqTotal+")":"";
+  const g=S.openGroup?S.groups.find(x=>x.id===S.openGroup):null;
+  if(!g){
+    det.classList.add("hidden");home.classList.remove("hidden");
+    home.innerHTML=`
+      <div class="section-card"><div class="section-head"><h2>GROUPS</h2></div>
+        <div class="row"><button class="btn black" onclick="createGroup()">CREATE GROUP</button><button class="btn" onclick="joinGroup()">JOIN WITH ROOM CODE</button></div></div>
+      ${S.myRequests.length?`<div class="section-card"><div class="section-head"><h2>PENDING REQUESTS</h2></div><div class="list">${S.myRequests.map(r=>`<div class="item"><div class="left"><div><b>${esc(r.gname)}</b><small>Waiting for approval • ${timeAgo(r.time)}</small></div></div><button class="btn small" onclick="cancelRequest('${esc(r.id)}')">CANCEL</button></div>`).join("")}</div></div>`:""}
+      <div class="section-card"><div class="section-head"><h2>MY GROUPS</h2></div><div class="list">
+        ${S.groups.map(x=>`<div class="item"><div class="left"><div><b>${esc(x.name)}</b><small>${(x.members||[]).length} members${isAdmin(x)&&(S.requests[x.id]||[]).length?" • "+S.requests[x.id].length+" REQUEST(S)":""}</small></div></div><button class="btn small" onclick="openGroupView('${esc(x.id)}')">OPEN</button></div>`).join("")||`<div class="notice">No groups yet.</div>`}
+      </div></div>`;
+    return;
+  }
+  home.classList.add("hidden");det.classList.remove("hidden");
+  const files=(S.groupFiles[g.id]||[]).slice().sort((a,b)=>b.created-a.created);
+  const reqs=isAdmin(g)?(S.requests[g.id]||[]):[];
+  det.innerHTML=`
+    <div class="row" style="margin-bottom:12px"><button class="btn small" onclick="closeGroupView()">← ALL GROUPS</button></div>
+    <div class="hero-main"><h1>${esc(g.name)}</h1><span class="badge black">ROOM CODE ${esc(g.code)}</span>
+      <div class="row" style="margin-top:14px"><button class="btn small" onclick="leaveGroup('${esc(g.id)}')">${(g.members||[]).length===1?"DELETE GROUP":"LEAVE GROUP"}</button></div></div>
+    ${reqs.length?`<div class="section-card"><div class="section-head"><h2>JOIN REQUESTS (${reqs.length})</h2></div><div class="list">${reqs.map(r=>`<div class="item"><div class="left"><div><b>${esc(r.name)}</b><small>@${esc(r.username)} • ${timeAgo(r.time)}</small></div></div><div class="row"><button class="btn small" onclick="approveRequest('${esc(g.id)}','${esc(r.uid)}')">APPROVE</button><button class="btn small" onclick="declineRequest('${esc(g.id)}','${esc(r.uid)}')">DECLINE</button></div></div>`).join("")}</div></div>`:""}
+    <div class="section-card"><div class="section-head"><h2>GROUP DOCUMENTS</h2></div>
+      <div class="dz" data-dz="group">DROP DOCUMENTS FOR THE GROUP<div class="row"><button class="btn black" onclick="$('fileGroup').click()">UPLOAD TO GROUP</button></div></div>
+      <div class="list" style="margin-top:12px">${files.map(f=>fileRow(f,"group",g.id)).join("")||`<div class="notice">No documents in this group.</div>`}</div></div>`;
+}
+
+function renderAccount(){
+  $("accName").textContent=S.user.name;$("accUser").textContent="@"+S.user.username;
+  $("devicePrefs").innerHTML=["iOS","Android","PC","Tablet"].map(t=>`<button class="btn ${selectedDevice===t?"black":""}" onclick="setDeviceType('${t}')">${t}</button>`).join("");
+  const devs=S.user.devices||{};
+  $("deviceList").innerHTML=Object.keys(devs).sort((a,b)=>(devs[b].seen||0)-(devs[a].seen||0)).map(id=>{
+    const d=devs[id],me=id===S.deviceId;
+    return `<div class="item"><div class="left"><div class="ext">${esc(String(d.type||"?").slice(0,4).toUpperCase())}</div><div><b>${esc(d.name)}${me?' <span class="badge black">THIS</span>':""}</b><small>${timeAgo(d.seen)}</small></div></div><div class="row"><button class="btn small" onclick="renameDevice('${esc(id)}')">RENAME</button>${me?"":`<button class="btn small" onclick="removeDevice('${esc(id)}')">REMOVE</button>`}</div></div>`;
+  }).join("");
+}
+
+function renderRmDevices(){
+  const sel=$("rmDevice"),cur=sel.value,devs=S.user.devices||{};
+  const ids=Object.keys(devs).filter(id=>id!==S.deviceId);
+  sel.innerHTML=ids.length?ids.map(id=>`<option value="${esc(id)}">${esc(devs[id].name)} (${esc(devs[id].type||"?")})</option>`).join("")+`<option value="__all__">All other devices</option>`:`<option value="">No other devices</option>`;
+  if(cur&&Array.from(sel.options).some(o=>o.value===cur)){sel.value=cur;}
 }
 
 function renderAll(){
   if(!S.active||!S.user){return;}
-  renderVault();
-  renderShare();
-  renderGroups();
-  renderAccount();
-  renderRmDevices();
+  renderVault();renderShare();renderGroups();renderAccount();renderRmDevices();
 }
 
-/* ---------- navigation ---------- */
-
+/* navigation */
 function showPage(p){
-  S.page=p;
   document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));
   $("page-"+p).classList.add("active");
   document.querySelectorAll("[data-page]").forEach(b=>b.classList.toggle("active",b.dataset.page===p));
   window.scrollTo({top:0});
 }
-document.querySelectorAll("[data-page]").forEach(b=>b.addEventListener("click",()=>showPage(b.dataset.page)));
+document.querySelectorAll("[data-page]").forEach(b=>b.onclick=()=>showPage(b.dataset.page));
 
-/* ---------- uploads / drag and drop ---------- */
-
+/* uploads / drag and drop */
 $("fileVault").onchange=async e=>{await handleFiles(e.target.files,{});e.target.value="";};
 $("fileGroup").onchange=async e=>{if(S.openGroup){await handleFiles(e.target.files,{group:S.openGroup});}e.target.value="";};
-
-document.addEventListener("dragover",e=>{const z=e.target.closest&&e.target.closest("[data-dz]");if(z){e.preventDefault();z.classList.add("over");}});
-document.addEventListener("dragleave",e=>{const z=e.target.closest&&e.target.closest("[data-dz]");if(z){z.classList.remove("over");}});
+const zoneOf=e=>e.target.closest&&e.target.closest("[data-dz]");
+document.addEventListener("dragover",e=>{const z=zoneOf(e);if(z){e.preventDefault();z.classList.add("over");}});
+document.addEventListener("dragleave",e=>{const z=zoneOf(e);if(z){z.classList.remove("over");}});
 document.addEventListener("drop",e=>{
-  const z=e.target.closest&&e.target.closest("[data-dz]");
-  if(!z){return;}
-  e.preventDefault();
-  z.classList.remove("over");
+  const z=zoneOf(e);if(!z){return;}
+  e.preventDefault();z.classList.remove("over");
   const files=e.dataTransfer&&e.dataTransfer.files;
   if(z.dataset.dz==="group"&&S.openGroup){handleFiles(files,{group:S.openGroup});}
   else if(z.dataset.dz==="vault"){handleFiles(files,{});}
 });
 
-/* ---------- online tag ---------- */
+function updateNetTag(){const on=navigator.onLine;$("netTag").classList.toggle("offline",!on);$("netTag").lastElementChild.textContent=on?"Online":"Offline";}
+window.addEventListener("online",updateNetTag);window.addEventListener("offline",updateNetTag);updateNetTag();
 
-function updateNetTag(){
-  const on=navigator.onLine;
-  const el=$("netTagSide");
-  el.classList.toggle("offline",!on);
-  el.lastElementChild.textContent=on?"Online":"Offline";
-}
-window.addEventListener("online",updateNetTag);
-window.addEventListener("offline",updateNetTag);
-updateNetTag();
-
-/* ---------- start ---------- */
-
+/* start */
 renderDots();
-(function(){
-  const msg=sessionStorage.getItem("DD_MSG");
-  if(msg){sessionStorage.removeItem("DD_MSG");setTimeout(()=>toast(msg),300);}
-})();
+(function(){const m=sessionStorage.getItem("DD_MSG");if(m){sessionStorage.removeItem("DD_MSG");setTimeout(()=>toast(m),300);}})();
 resumeSession();
-
 </script>
-
 </body>
 </html>
