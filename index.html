@@ -109,12 +109,13 @@ h2{margin:0;font:900 22px Arial Black,Arial,sans-serif;overflow-wrap:anywhere}
 .mobile-nav{display:none}
 @media(max-width:900px){
   .shell{grid-template-columns:1fr}.sidebar{display:none}
-  .main{padding:13px 10px 92px}
+  .main{padding:78px 10px 24px}
+  .topbar{display:none}
   .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .mobile-nav{position:fixed;left:5px;right:5px;bottom:5px;z-index:80;display:flex;gap:3px;padding:5px;background:#fff;border:2px solid var(--k);border-radius:17px;box-shadow:4px 4px 0 var(--k)}
-  .mobile-nav button{flex:1;min-width:0;border:0;background:none;color:var(--k);border-radius:9px;padding:9px 3px;font-size:10px;font-weight:900}
+  .mobile-nav{position:fixed;top:0;left:0;right:0;z-index:80;display:flex;gap:4px;padding:calc(8px + env(safe-area-inset-top,0px)) 8px 8px;background:#fff;border-bottom:2px solid var(--k)}
+  .mobile-nav button{flex:1;min-width:0;border:2px solid var(--k);background:#fff;color:var(--k);border-radius:10px;padding:11px 2px;font-size:11px;font-weight:900}
   .mobile-nav button.active{background:var(--k);color:#fff}
-  .progress,.toast{bottom:84px}
+  .progress,.toast{bottom:16px}
 }
 @media(max-width:700px){
   .item{flex-direction:column;align-items:stretch}
@@ -123,6 +124,11 @@ h2{margin:0;font:900 22px Arial Black,Arial,sans-serif;overflow-wrap:anywhere}
   .section-card{padding:14px}
 }
 @media(max-width:560px){.onboard-card{padding:20px}.brand{font-size:42px}.keypad{max-width:280px;gap:8px}.key{font-size:20px}.stat .n{font-size:20px}}
+#adminPanel{position:fixed;inset:0;z-index:200;background:#fff;overflow:auto}
+.adm-bar{position:sticky;top:0;z-index:2;display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:10px 12px;padding-top:calc(10px + env(safe-area-inset-top,0px));background:#fff;border-bottom:2px solid var(--k)}
+.adm-title{font:900 20px Arial Black,Arial,sans-serif;flex:1}
+.adm-body{max-width:560px;margin:auto;padding:16px 14px 40px}
+.logo-tap,.side-brand{-webkit-user-select:none;user-select:none;cursor:default}
 </style>
 </head>
 <body>
@@ -148,27 +154,6 @@ h2{margin:0;font:900 22px Arial Black,Arial,sans-serif;overflow-wrap:anywhere}
     <div class="code-dots" id="codeDots"></div>
     <div class="keypad" id="keypad"></div>
     <div class="row" style="justify-content:center;margin-top:15px"><button class="link" id="backToDevice">← Change device</button></div>
-  </div>
-
-  <div class="onboard-card card hidden" id="adminScreen">
-    <div class="brand" style="font-size:40px">ADMIN</div>
-    <h1 class="title">USER ACCOUNTS</h1>
-    <p class="sub">Add or remove accounts. Users sign in only with the code you give them.</p>
-    <div class="field">
-      <label>Display name</label><input id="admName" maxlength="30" autocomplete="off">
-      <label style="margin-top:10px">Username</label><input id="admUser" maxlength="20" placeholder="@username" autocomplete="off">
-      <label style="margin-top:10px">6-digit access code</label><input id="admCode" maxlength="6" inputmode="numeric" placeholder="000000" autocomplete="off">
-    </div>
-    <button class="btn black full" onclick="adminAdd()">ADD USER</button>
-    <div class="label" style="margin:18px 0 8px">ALL ACCOUNTS</div>
-    <div class="list" id="admList"></div>
-    <div class="label" style="margin:20px 0 8px">CHANGE ADMIN CODE</div>
-    <div class="field" style="margin-top:0">
-      <input id="admNew" type="password" maxlength="6" inputmode="numeric" placeholder="New 6-digit admin code" autocomplete="off">
-      <input id="admNew2" type="password" maxlength="6" inputmode="numeric" placeholder="Repeat new admin code" autocomplete="off" style="margin-top:8px">
-    </div>
-    <button class="btn full" onclick="adminChangeCode()">SAVE ADMIN CODE</button>
-    <button class="btn black full" style="margin-top:16px" onclick="location.reload()">EXIT ADMIN</button>
   </div>
 </div>
 
@@ -248,13 +233,7 @@ h2{margin:0;font:900 22px Arial Black,Arial,sans-serif;overflow-wrap:anywhere}
           <div class="section-head"><h2>SYNCED DEVICES</h2><button class="btn small" onclick="removeOtherDevices()">REMOVE ALL OTHERS</button></div>
           <div class="list" id="deviceList"></div>
         </div>
-        <div class="section-card">
-          <div class="section-head"><h2>REMOVE DEVICE WITH CODE</h2></div>
-          <div class="field"><label>Device</label><select id="rmDevice"></select></div>
-          <div class="field"><label>Your 6-digit access code</label><input id="rmCode" type="password" maxlength="6" inputmode="numeric" placeholder="000000" autocomplete="off"></div>
-          <button class="btn black full" onclick="removeDeviceWithCode()">REMOVE DEVICE</button>
-        </div>
-      </section>
+</section>
     </main>
   </div>
 
@@ -264,6 +243,26 @@ h2{margin:0;font:900 22px Arial Black,Arial,sans-serif;overflow-wrap:anywhere}
     <button data-page="groups">GROUPS</button>
     <button data-page="account">ACCOUNT</button>
   </div>
+</div>
+
+<div id="adminPanel" class="hidden">
+  <div class="adm-bar">
+    <button class="btn small" onclick="closeAdmin()">← BACK</button>
+    <div class="adm-title">ADMIN</div>
+    <div class="row">
+      <button class="btn small black" data-at="users" onclick="adminTab('users')">USERS</button>
+      <button class="btn small" data-at="add" onclick="adminTab('add')">ADD USER</button>
+    </div>
+  </div>
+  <div class="adm-body">
+    <section id="at-users"><div class="label" style="margin-bottom:10px">ALL ACCOUNTS</div><div class="list" id="admList"></div></section>
+    <section id="at-add" class="hidden">
+      <div class="field"><label>Display name</label><input id="admName" maxlength="30" autocomplete="off">
+        <label style="margin-top:10px">Username</label><input id="admUser" maxlength="20" placeholder="@username" autocomplete="off">
+        <label style="margin-top:10px">6-digit access code</label><input id="admCode" maxlength="6" inputmode="numeric" placeholder="000000" autocomplete="off"></div>
+      <button class="btn black full" onclick="adminAdd()">ADD USER</button>
+    </section>
+</div>
 </div>
 
 <input type="file" id="fileVault" multiple class="hidden">
@@ -321,7 +320,7 @@ function xDialog(o){
     const m=$("dialogModal"),inp=$("dlgInput");
     $("dlgTitle").textContent=o.title||"";$("dlgMsg").textContent=o.message||"";
     $("dlgField").classList.toggle("hidden",!o.input);
-    inp.value=o.value||"";inp.placeholder=o.placeholder||"";
+    inp.type=o.secret?"password":"text";inp.inputMode=o.numeric?"numeric":"";inp.value=o.value||"";inp.placeholder=o.placeholder||"";
     $("dlgOk").textContent=o.ok||"OK";
     m.classList.remove("hidden");
     if(o.input){setTimeout(()=>inp.focus(),60);}
@@ -410,20 +409,8 @@ function failCode(){
 
 async function doLogin(){
   const c=F(),h=await hashCode(codeInput);
-  const adm=await c.getDoc(c.doc(c.db,"dd_admin","main")).catch(()=>null);
-  S.adminHash=adm&&adm.exists()?adm.data().codeHash:null;
-  if(S.adminHash&&h===S.adminHash){fails=0;await openAdmin();return;}
   const claim=await c.getDoc(c.doc(c.db,"dd_claims","c_"+h));
-  if(!claim.exists()){
-    if(!S.adminHash){
-      if(await askConfirm("SET ADMIN CODE","No admin code has been set yet. Use this code as the admin code? Do this right after you deploy the app.","SET ADMIN CODE")){
-        await c.setDoc(c.doc(c.db,"dd_admin","main"),{codeHash:h,updated:Date.now()});
-        S.adminHash=h;fails=0;await openAdmin();return;
-      }
-      resetCode();return;
-    }
-    failCode();return;
-  }
+  if(!claim.exists()){failCode();return;}
   const id=claim.data().owner;
   const snap=await c.getDoc(c.doc(c.db,"dd_users",id));
   if(!snap.exists()||snap.data().codeHash!==h){failCode();return;}
@@ -431,8 +418,29 @@ async function doLogin(){
   await finishLogin({...snap.data(),id});
 }
 
-/* admin */
-async function openAdmin(){$("accountScreen").classList.add("hidden");$("adminScreen").classList.remove("hidden");resetCode();await loadAdminUsers();}
+/* admin: tap the DOCDROP name at the top 20 times */
+const ADMIN_HASH="09c044bb987de3a548575f31de5bbfa4f1d151f498bc0df3c45c9a60a79ebcdf";
+let tapN=0,tapT=0;
+document.querySelectorAll(".logo-tap,.side-brand").forEach(el=>el.onclick=()=>{
+  const n=Date.now();
+  tapN=n-tapT<2000?tapN+1:1;tapT=n;
+  if(tapN>=20){tapN=0;openAdminGate();}
+});
+async function openAdminGate(){
+  if(!F()){toast("Cloud unavailable.");return;}
+  if(Date.now()<lockUntil){toast("Too many attempts. Try again in "+Math.ceil((lockUntil-Date.now())/1000)+"s.");return;}
+  const v=await xDialog({title:"ADMIN ACCESS",message:"Enter the admin secret.",input:true,secret:true,ok:"ENTER"});
+  if(v===null){return;}
+  if((await hashCode(v.trim()))!==ADMIN_HASH){failCode();return;}
+  fails=0;
+  $("adminPanel").classList.remove("hidden");
+  adminTab("users");loadAdminUsers();
+}
+function closeAdmin(){$("adminPanel").classList.add("hidden");}
+function adminTab(t){
+  ["users","add"].forEach(k=>$("at-"+k).classList.toggle("hidden",k!==t));
+  document.querySelectorAll("[data-at]").forEach(b=>b.classList.toggle("black",b.dataset.at===t));
+}
 
 async function loadAdminUsers(){
   const c=F();
@@ -485,20 +493,6 @@ async function adminRemove(id){
     await c.deleteDoc(c.doc(c.db,"dd_claims","c_"+u.codeHash));
     await c.deleteDoc(ud.ref);
     toast("User removed.");loadAdminUsers();
-  }catch(e){cloudErr(e);}
-}
-
-async function adminChangeCode(){
-  const a=$("admNew").value.trim(),b=$("admNew2").value.trim();
-  if(!/^\d{6}$/.test(a)){toast("Admin code must contain 6 digits.");return;}
-  if(a!==b){toast("The two codes do not match.");return;}
-  const c=F();
-  try{
-    const h=await hashCode(a);
-    if((await c.getDoc(c.doc(c.db,"dd_claims","c_"+h))).exists()){toast("A user already uses that code. Choose another.");return;}
-    await c.setDoc(c.doc(c.db,"dd_admin","main"),{codeHash:h,updated:Date.now()});
-    S.adminHash=h;$("admNew").value=$("admNew2").value="";
-    toast("Admin code changed.");
   }catch(e){cloudErr(e);}
 }
 
@@ -886,39 +880,30 @@ async function setDeviceType(t){
   const c=F();
   try{await c.updateDoc(c.doc(c.db,"dd_users",S.user.id),{["devices."+S.deviceId+".type"]:t});toast("Device preference saved.");}catch(e){cloudErr(e);}
 }
+async function verifyCode(msg){
+  if(Date.now()<lockUntil){toast("Too many attempts. Try again in "+Math.ceil((lockUntil-Date.now())/1000)+"s.");return false;}
+  const v=await xDialog({title:"ENTER ACCESS CODE",message:msg,input:true,secret:true,numeric:true,placeholder:"000000",ok:"CONFIRM"});
+  if(v===null){return false;}
+  if((await hashCode(v.trim()))!==S.user.codeHash){
+    fails++;
+    if(fails>=5){fails=0;lockUntil=Date.now()+60000;toast("Too many wrong codes. Locked for 60 seconds.");}else{toast("Incorrect access code.");}
+    return false;
+  }
+  fails=0;return true;
+}
 async function removeDevice(id){
   if(id===S.deviceId){toast("Use Logout to sign out of this device.");return;}
   const d=(S.user.devices||{})[id];if(!d){return;}
-  if(!(await askConfirm("REMOVE DEVICE","Sign "+d.name+" out of your account?","REMOVE"))){return;}
+  if(!(await verifyCode("Remove "+d.name+" from your account. Enter your 6-digit access code."))){return;}
   const c=F();
   try{const next={...S.user.devices};delete next[id];await c.updateDoc(c.doc(c.db,"dd_users",S.user.id),{devices:next});toast("Device removed.");}catch(e){cloudErr(e);}
 }
 async function removeOtherDevices(){
   if(!Object.keys(S.user.devices||{}).some(k=>k!==S.deviceId)){toast("There are no other devices.");return;}
-  if(!(await askConfirm("REMOVE ALL OTHERS","Sign out all other devices?","REMOVE"))){return;}
+  if(!(await verifyCode("Sign out all other devices. Enter your 6-digit access code."))){return;}
   const c=F();
   try{await c.updateDoc(c.doc(c.db,"dd_users",S.user.id),{devices:{[S.deviceId]:S.user.devices[S.deviceId]}});toast("Other devices removed.");}catch(e){cloudErr(e);}
 }
-async function removeDeviceWithCode(){
-  const id=$("rmDevice").value,code=$("rmCode").value.trim();
-  if(!id){toast("There is no other device to remove.");return;}
-  if(!/^\d{6}$/.test(code)){toast("Enter your 6-digit access code.");return;}
-  if(Date.now()<lockUntil){toast("Too many attempts. Try again in "+Math.ceil((lockUntil-Date.now())/1000)+"s.");return;}
-  if((await hashCode(code))!==S.user.codeHash){
-    $("rmCode").value="";fails++;
-    if(fails>=5){fails=0;lockUntil=Date.now()+60000;toast("Too many wrong codes. Locked for 60 seconds.");}else{toast("Incorrect access code.");}
-    return;
-  }
-  fails=0;
-  const c=F();
-  try{
-    const next={...S.user.devices};
-    if(id==="__all__"){Object.keys(next).forEach(k=>{if(k!==S.deviceId){delete next[k];}});}else{delete next[id];}
-    await c.updateDoc(c.doc(c.db,"dd_users",S.user.id),{devices:next});
-    $("rmCode").value="";toast(id==="__all__"?"Other devices removed.":"Device removed.");
-  }catch(e){cloudErr(e);}
-}
-
 /* render */
 const vaultDocs=()=>S.files.filter(f=>f.personal!==false).sort((a,b)=>b.created-a.created);
 
@@ -996,16 +981,9 @@ function renderAccount(){
   }).join("");
 }
 
-function renderRmDevices(){
-  const sel=$("rmDevice"),cur=sel.value,devs=S.user.devices||{};
-  const ids=Object.keys(devs).filter(id=>id!==S.deviceId);
-  sel.innerHTML=ids.length?ids.map(id=>`<option value="${esc(id)}">${esc(devs[id].name)} (${esc(devs[id].type||"?")})</option>`).join("")+`<option value="__all__">All other devices</option>`:`<option value="">No other devices</option>`;
-  if(cur&&Array.from(sel.options).some(o=>o.value===cur)){sel.value=cur;}
-}
-
 function renderAll(){
   if(!S.active||!S.user){return;}
-  renderVault();renderShare();renderGroups();renderAccount();renderRmDevices();
+  renderVault();renderShare();renderGroups();renderAccount();
 }
 
 /* navigation */
